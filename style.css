@@ -1,0 +1,414 @@
+/* --- HLAVIČKA --- */
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    padding: 15px 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    margin-bottom: 25px;
+    color: #b5651d;
+}
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    color: #b5651d;
+    font-size: 15px;
+}
+.logo-img {
+    height:35px;
+    width: auto;
+}
+header h1 {
+    color: #b5651d;
+    font-size: 20px;
+    margin: 0;
+    text-transform: uppercase;
+    text-align: center;
+    flex-grow: 1;
+}
+.header-right {
+    width: 150px;
+}
+
+table {
+  margin-right: calc(100vw - var(--stlpec-meno) - var(--stlpec-cas) - var(--stlpec-den));
+  table-layout: fixed;
+  width: calc(var(--stlpec-meno) + var(--stlpec-cas) + 31 * var(--stlpec-den));
+  border-collapse: collapse;
+  font-size: 11px;
+  text-align: center;
+}
+
+table th, table td{
+  box-sizing: border-box;
+  border: 2px solid #cbd5e1;
+  padding: 4px 2px;
+}
+
+table th{
+  background-color: #fef2b5;
+  color: #1e293b;
+  font-weight: bold;
+}
+
+.table-container{
+  scroll-snap-type: x proximity;
+  scroll-padding-left: calc(var(--stlpec-meno) + var(--stlpec-cas));
+  width: 100%;
+  overflow-x: auto;
+}
+th:not(.stlpec-meno):not(.stlpec-cas),
+td:not(.stlpec-meno):not(.stlpec-cas){
+  scroll-snap-align: start;
+}
+
+:root{
+  --stlpec-meno: 150px;
+  --stlpec-cas: 100px;
+  --stlpec-den: 45px;
+}
+
+.stlpec-meno, .stlpec-cas{
+  position: sticky;
+  z-index: 2;
+  text-align: left;
+  padding-left: 8px;
+}
+
+.stlpec-meno{
+  left: 0;
+  width: var(--stlpec-meno);
+  background-color: #fef2b5;
+}
+.stlpec-cas{
+  left: var(--stlpec-meno);
+  width: var(--stlpec-cas);
+  background-color: #fef2b5;
+  box-shadow: 3px 0 0 #b5651d;
+}
+
+.kin{
+  background-color: #ec4899;
+  padding: 4px;
+  border-radius: 4px;
+}
+.kam{
+  background-color: #fef3c7;
+  padding: 4px;
+  border-radius: 4px;
+}
+.j{
+  background-color: #ff0000;
+  padding: 4px;
+  border-radius: 4px;
+}
+.l{
+  background-color: #7c3aed;
+  padding: 4px;
+  border-radius: 4px;
+}
+.ď{
+  background-color: #84cc16;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.b{
+  background-color: #e5b395;
+  padding: 4px;
+  border-radius: 4px;
+}
+.č{
+  background-color: #c05621;
+  padding: 4px;
+  border-radius: 4px;
+}
+.h{
+  background-color: #60a5fa;
+  padding: 4px;
+  border-radius: 4px;
+}
+.lau{
+  background-color: #dbeafe;
+  padding: 4px;
+  border-radius: 4px;
+}
+.m{
+  background-color: #ffffff;
+  padding: 4px;
+  border-radius: 4px;
+}
+.moz{
+  background-color: #22c55e;
+  padding: 4px;
+  border-radius: 4px;
+}
+.p{
+  background-color: #4d7c0f;
+  padding: 4px;
+  border-radius: 4px;
+}
+.s{
+  background-color: #facc15;
+  padding: 4px;
+  border-radius: 4px;
+}
+.med{
+  background-color: #dc2626;
+  padding: 4px;
+  border-radius: 4px;
+}
+.hol{
+  background-color: #ff000080;
+  padding: 4px;
+  border-radius: 4px;
+}
+.ris{
+  background-color: #e2e8f0;
+  padding: 4px;
+  border-radius: 4px;
+}
+.sluzba {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-between;
+
+    width: 100%;
+    max-width: 300px;
+    margin: 10px auto;
+
+    min-height: 70px;
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+
+    border-top: 2px solid #d1d5db;
+    border-right: 2px solid #d1d5db;
+    border-bottom: 2px solid #d1d5db;
+    border-left: 2px solid #d1d5db;
+
+    padding: 15px 15px 12px 20px;
+    box-sizing: border-box;
+    box-shadow: 0px 2px 8px rgba(0,0,0,0.08);
+}
+
+/* FAREBNÝ PÁS VĽAVO */
+
+.sluzba::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height:6px;
+    border-top-left-radius: 30px;
+    border-top-right-radius: 30px;
+}
+
+/* Holeschová – LOSOSOVÁ */
+
+.lososova::before {
+    background: #ff000080;
+}
+
+/* Legíňová – FIALOVÁ */
+
+.fialova::before {
+    background: #7B2CBF;
+}
+
+/* Spodniaková – ŽLTÁ */
+
+.zlta::before {
+    background: #F5C400;
+}
+
+/* Helexová – MODRÁ */
+
+.modra::before {
+    background: #60a5fa;
+}
+
+/* Laurošková – NEBOVOMODRA */
+
+.nebovomodra::before {
+    background: #dbeafe;
+}
+
+/* Považanová – TMAVOZELENÁ */
+
+.tmavozelena::before {
+    background: #4d7c0f;
+}
+
+/* Ďuricová – SLABOZELENÁ */
+
+.slabozelena::before {
+    background: #84cc16;
+}
+
+/* Kindernayová – CIKLAMENOVÁ */
+
+.ciklamenova::before {
+    background: #ec4899;
+}
+
+/* Mozolová – KRIKĽAVOZELENÁ */
+
+.kriklavozelena::before {
+    background: #22c55e;
+}
+
+/* Čaradová – HNEDÁ */
+
+.hneda::before {
+    background: #c05621;
+}
+
+/* Kamasová – BÉŽOVÁ */
+
+.bezova::before {
+    background: #fef3c7;
+}
+
+/* Medveďová – TMAVOČERVENÁ */
+
+.tmavocervena::before {
+    background: #dc2626;
+}
+
+/* Bublincová – ORANŽOVÁ */
+
+.bg-oranzova::before {
+    background: #e5b395;
+}
+
+/* Judiaková – ČERVENÁ */
+
+.bg-cervena::before {
+    background: #ff0000;
+}
+
+/* Motyčáková – BIELA */
+
+.biela::before {
+    background: #f9f9f9;
+}
+
+/* Risková – BLEDOZELENÁ */
+
+.bledozelena::before {
+    background: #e2e8f0;
+}
+
+/* MENO */
+.meno {
+    color: #111;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+
+/* TRI GULIČKY */
+.bodky {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    display: flex;
+    gap: 3px;
+}
+
+.bodka {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+.bodka.tlmena{
+    opacity: 0.25;
+    transition: opacity 0.2s;
+}
+.bodka.aktivna{
+    opacity: 1;
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.08);
+}
+
+/* ZELENÁ */
+.zelena {
+    background: #20B85A;
+}
+
+/* ORANŽOVÁ */
+.oranzova {
+    background: #F39C12;
+}
+
+/* ČERVENÁ */
+.cervena {
+    background: #E53935;
+}
+
+.mriezka {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+    max-width: 1400px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
+.rozpis {
+    margin-top: 15px;
+    padding-top: 8px;
+    border-top: 1px solid #e5e7eb;
+    color: #6b7280;
+    font-size: 10px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.meno {
+    font-size: 12px;
+}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Dochádzka — Bublincová Miroslava</title>
+<style>
+  :root{
+    --bg: #F6F4EE;
+    --card: #FFFFFF;
+    --ink: #2B2A25;
+    --muted: #8A8577;
+    --line: #E4E0D4;
+    --prichod: #2F6F62;
+    --prichod-dark: #234F45;
+    --prestup: #D69A2D;
+    --prestup-dark: #A9781F;
+    --odchod: #B4502C;
+    --odchod-dark: #8C3D22;
+    --pill: #EFEAD9;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body { min-height: 100vh; display: flex; justify-content: center; padding: 0 0 40px; }
+  .app { width: 100%; max-width: 460px; min-height: 100vh; padding: 28px 20px 20px; }
+
+  .top { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+  .top .label { font-size: 12px; letter-spacing: 0.02em; color: var(--muted); }
+  .top .name { font-size: 26px; font-weight: 700; line-height: 1.15; }
+
+  .nav { display:flex; gap:8px; margin-bottom:22px; }
+  .nav a {
+    flex:1; text-align:center; padding:9px 6px; border-radius:10px;
+    background: var(--pill); font-size:12px; font-weight:700;
+    color: var(--muted); text-decoration:none;
+  }
+  .nav a.active { background: var(--prichod); color:white; }
+
+  .clock { text-align: center; margin: 6px 0 24px; }
+  .clock .time { font-size: 52px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  .clock .date { font-size: 14px; color: var(--muted); margin-top: 2px; text-transform: capitalize; }
+
+  .status { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0 0 20px; }
+  .status .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+  .status.in .dot { background: var(--prichod); }
+  .status.presun .dot { background: var(--prestup); }
+  .status.out .dot { background: var(--odchod); }
+  .status .txt { font-size: 14px; color: var(--muted); font-weight: 600; }
+  .status.in .txt { color: var(--prichod-dark); }
+  .status.presun .txt { color: var(--prestup-dark); }
+  .status.out .txt { color: var(--odchod-dark); }
+
+  .klient-field { margin-bottom: 16px; }
+  .klient-field label {
+    display: block; font-size: 12px; color: var(--muted); font-weight: 600; margin-bottom: 6px;
+  }
+  .klient-field input {
+    width: 100%; padding: 13px 14px; border-radius: 12px; border: 1px solid var(--line);
+    background: var(--card); font-size: 16px; font-family: inherit; color: var(--ink);
+  }
+
+  .buttons { display: flex; flex-direction: column; gap: 12px; margin-bottom: 26px; }
+  button.action {
+    border: none; border-radius: 18px; padding: 20px 18px; font-size: 18px; font-weight: 700;
+    color: white; display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; transition: transform 0.08s ease, opacity 0.15s ease;
+  }
+  button.action:active { transform: scale(0.98); }
+  button.action:disabled { opacity: 0.35; cursor: not-allowed; }
+  button.action .sub { font-size: 12px; font-weight: 500; opacity: 0.85; }
+  .btn-prichod { background: linear-gradient(135deg, var(--prichod), var(--prichod-dark)); }
+  .btn-prestup { background: linear-gradient(135deg, var(--prestup), var(--prestup-dark)); }
+  .btn-odchod  { background: linear-gradient(135deg, var(--odchod), var(--odchod-dark)); }
+  button.action .arrow { font-size: 22px; opacity: 0.9; }
+
+  .log-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .log-head h2 { font-size: 15px; margin: 0; font-weight: 700; }
+  .log-head .count { font-size: 12px; color: var(--muted); }
+  .log-card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 6px 16px; margin-bottom: 18px; }
+  .entry { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--line); font-size: 14px; gap: 10px; }
+  .entry:last-child { border-bottom: none; }
+  .entry .left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .entry .tag { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; color: white; white-space: nowrap; }
+  .entry .tag.p { background: var(--prichod); }
+  .entry .tag.pr { background: var(--prestup); }
+  .entry .tag.o { background: var(--odchod); }
+  .entry .klient { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
+  .entry .t { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+  .empty { padding: 22px 0; text-align: center; color: var(--muted); font-size: 13px; }
+
+  .summary { display: flex; justify-content: space-between; background: var(--pill); border-radius: 14px; padding: 14px 18px; margin-bottom: 18px; font-size: 13px; }
+  .summary .k { color: var(--muted); }
+  .summary .v { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  .sync { text-align: center; font-size: 12px; color: var(--muted); margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="top">
+    <span class="label">Charita — dochádzka</span>
+    <span class="name" id="nameDisplay">Bublincová Miroslava</span>
+  </div>
+
+  <div class="nav" id="navLinks"></div>
+
+  <div class="clock">
+    <div class="time" id="clockTime">--:--:--</div>
+    <div class="date" id="clockDate">—</div>
+  </div>
+
+  <div class="status" id="statusPill">
+    <span class="dot"></span>
+    <span class="txt" id="statusTxt">Načítavam…</span>
+  </div>
+
+  <div class="klient-field">
+    <label for="klientInput">Meno klienta (pre príchod)</label>
+    <input type="text" id="klientInput" list="klientList" placeholder="napr. Stieranková">
+    <datalist id="klientList"></datalist>
+  </div>
+
+  <div class="buttons">
+    <button class="action btn-prichod" id="btnPrichod">
+      <span>Príchod<br><span class="sub">u klienta — začína zelená</span></span>
+      <span class="arrow">↓</span>
+    </button>
+    <button class="action btn-prestup" id="btnPrestup">
+      <span>Prestup<br><span class="sub">presun medzi klientmi — oranžová</span></span>
+      <span class="arrow">→</span>
+    </button>
+    <button class="action btn-odchod" id="btnOdchod">
+      <span>Odchod<br><span class="sub">koniec služby — červená</span></span>
+      <span class="arrow">↑</span>
+    </button>
+  </div>
+
+  <div class="summary">
+    <div><div class="k">Odpracované dnes</div><div class="v" id="sumWorked">0:00</div></div>
+    <div><div class="k">Počet zápisov</div><div class="v" id="sumCount">0</div></div>
+  </div>
+
+  <div class="log-head">
+    <h2>Dnešné záznamy</h2>
+    <span class="count" id="logDateLabel"></span>
+  </div>
+  <div class="log-card" id="logCard">
+    <div class="empty">Zatiaľ žiadne záznamy</div>
+  </div>
+
+  <div class="sync" id="syncNote">
+    Ukladá sa len v tomto telefóne. Pre prepojenie s tabuľkou treba nastaviť synchronizáciu.
+  </div>
+
+</div>
+
+<script>
+  const DEFAULT_NAME = "Bublincová Miroslava";
+  const params = new URLSearchParams(window.location.search);
+  const NAME = params.get("meno") ? decodeURIComponent(params.get("meno")) : DEFAULT_NAME;
+  document.title = "Dochádzka — " + NAME;
+  document.getElementById("nameDisplay").textContent = NAME;
+
+  const NAV_ITEMS = [
+    { href: "dochadzka.html", label: "Dochádzka" },
+    { href: "evidencia.html", label: "Evidencia" },
+    { href: "mesacny-vystup.html", label: "Mesačný výstup" }
+  ];
+  document.getElementById("navLinks").innerHTML = NAV_ITEMS.map(item=>{
+    const isActive = location.pathname.endsWith(item.href);
+    return `<a class="${isActive ? 'active' : ''}" href="${item.href}?meno=${encodeURIComponent(NAME)}">${item.label}</a>`;
+  }).join("");
+  const STORAGE_KEY = "dochadzka_" + NAME.replace(/\s+/g, "_");
+  const SYNC_URL = "";
+
+  function todayKey(d = new Date()) { return d.toISOString().slice(0,10); }
+  function pad(n){ return n.toString().padStart(2,"0"); }
+  function fmtTime(d){ return pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds()); }
+  function fmtDateLabel(d){ return d.toLocaleDateString("sk-SK", { weekday: "long", day: "numeric", month: "long" }); }
+
+  function loadAll(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e){ return {}; } }
+  function saveAll(data){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+  function todaysEntries(){ const all = loadAll(); return all[todayKey()] || []; }
+
+  function addEntry(type, klient){
+    const all = loadAll();
+    const key = todayKey();
+    if(!all[key]) all[key] = [];
+    const now = new Date();
+    const entry = { type, time: now.toISOString() };
+    if(klient) entry.klient = klient;
+    all[key].push(entry);
+    saveAll(all);
+    maybeSync(entry);
+    render();
+    refreshKlientList();
+  }
+
+  function maybeSync(entry){
+    if(!SYNC_URL) return;
+    fetch(SYNC_URL, {
+      method: "POST", mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ meno: NAME, typ: entry.type, cas: entry.time, klient: entry.klient || "" })
+    }).catch(()=>{});
+  }
+
+  function lastEntry(){
+    const entries = todaysEntries();
+    return entries.length ? entries[entries.length-1] : null;
+  }
+  function statusState(){
+    const last = lastEntry();
+    if(!last) return "out";
+    if(last.type === "odchod") return "out";
+    return last.type; // "prichod" | "prestup"
+  }
+
+  function computeWorkedMs(entries){
+    // Celý čas od prvého príchodu po posledný odchod sa počíta ako pracovný fond
+    // (vrátane prestupov medzi klientmi).
+    if(!entries.length) return 0;
+    const first = new Date(entries[0].time);
+    const last = entries[entries.length-1];
+    const end = last.type === "odchod" ? new Date(last.time) : new Date();
+    return end - first;
+  }
+  function fmtDuration(ms){
+    const totalMin = Math.floor(ms/60000);
+    return Math.floor(totalMin/60) + ":" + pad(totalMin % 60);
+  }
+
+  function refreshKlientList(){
+    const all = loadAll();
+    const names = new Set();
+    Object.values(all).forEach(dayEntries => {
+      dayEntries.forEach(e => { if(e.klient) names.add(e.klient); });
+    });
+    document.getElementById("klientList").innerHTML =
+      Array.from(names).sort().map(n => `<option value="${n}"></option>`).join("");
+  }
+
+  function render(){
+    const entries = todaysEntries();
+    const state = statusState();
+    const pill = document.getElementById("statusPill");
+    const txt = document.getElementById("statusTxt");
+    const btnIn = document.getElementById("btnPrichod");
+    const btnPr = document.getElementById("btnPrestup");
+    const btnOut = document.getElementById("btnOdchod");
+
+    pill.classList.remove("in","out","presun");
+
+    if(state === "prichod"){
+      pill.classList.add("in");
+      const last = lastEntry();
+      txt.textContent = "U klienta" + (last && last.klient ? " — " + last.klient : "");
+      btnIn.disabled = true;
+      btnPr.disabled = false;
+      btnOut.disabled = false;
+    } else if(state === "prestup"){
+      pill.classList.add("presun");
+      txt.textContent = "Presun medzi klientmi";
+      btnIn.disabled = false;
+      btnPr.disabled = true;
+      btnOut.disabled = false;
+    } else {
+      pill.classList.add("out");
+      txt.textContent = entries.length ? "Mimo služby" : "Zatiaľ žiadny príchod";
+      btnIn.disabled = false;
+      btnPr.disabled = true;
+      btnOut.disabled = true;
+    }
+
+    const logCard = document.getElementById("logCard");
+    if(entries.length === 0){
+      logCard.innerHTML = '<div class="empty">Zatiaľ žiadne záznamy</div>';
+    } else {
+      logCard.innerHTML = entries.slice().reverse().map(e=>{
+        const t = new Date(e.time);
+        const tagClass = e.type === "prichod" ? "p" : (e.type === "prestup" ? "pr" : "o");
+        const tagLabel = e.type === "prichod" ? "PRÍCHOD" : (e.type === "prestup" ? "PRESUN" : "ODCHOD");
+        return `<div class="entry">
+          <div class="left">
+            <span class="tag ${tagClass}">${tagLabel}</span>
+            ${e.klient ? `<span class="klient">${e.klient}</span>` : ""}
+          </div>
+          <span class="t">${fmtTime(t)}</span>
+        </div>`;
+      }).join("");
+    }
+
+    document.getElementById("sumCount").textContent = entries.length;
+    document.getElementById("sumWorked").textContent = fmtDuration(computeWorkedMs(entries));
+    document.getElementById("logDateLabel").textContent = fmtDateLabel(new Date());
+  }
+
+  document.getElementById("btnPrichod").addEventListener("click", ()=>{
+    const input = document.getElementById("klientInput");
+    const klient = input.value.trim();
+    if(!klient){ alert("Zadaj meno klienta, ku ktorému ideš."); input.focus(); return; }
+    addEntry("prichod", klient);
+    input.value = "";
+  });
+  document.getElementById("btnPrestup").addEventListener("click", ()=> addEntry("prestup"));
+  document.getElementById("btnOdchod").addEventListener("click", ()=> addEntry("odchod"));
+
+  function tickClock(){
+    const now = new Date();
+    document.getElementById("clockTime").textContent = fmtTime(now);
+    document.getElementById("clockDate").textContent = fmtDateLabel(now);
+  }
+  setInterval(()=>{ tickClock(); render(); }, 1000);
+  tickClock();
+  refreshKlientList();
+  render();
+</script>
+</body>
+</html>
+

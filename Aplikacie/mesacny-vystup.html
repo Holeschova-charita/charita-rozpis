@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Mesačný výstup — Bublincová Miroslava</title>
+<style>
+  :root{
+    --bg: #F6F4EE;
+    --card: #FFFFFF;
+    --ink: #2B2A25;
+    --muted: #8A8577;
+    --line: #E4E0D4;
+    --prichod: #2F6F62;
+    --prichod-dark: #234F45;
+    --pill: #EFEAD9;
+    --dov: #4C7FB0;
+    --pn: #A63D5B;
+    --prie: #6B6540;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  body { display:flex; justify-content:center; padding-bottom:40px; }
+  .app { width:100%; max-width: 720px; padding: 26px 18px 20px; }
+
+  .top { margin-bottom: 18px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .top .label { font-size:12px; color:var(--muted); }
+  .top .name { font-size:22px; font-weight:700; }
+
+  .controls {
+    display:flex; align-items:center; gap:10px; margin-bottom:18px; flex-wrap:wrap;
+  }
+  select#monthSelect {
+    padding:10px 12px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background:#FBFAF6;
+    font-size:14px;
+    font-family:inherit;
+  }
+  button.printBtn {
+    border:none;
+    border-radius:10px;
+    padding:10px 16px;
+    font-size:14px;
+    font-weight:700;
+    color:white;
+    background: linear-gradient(135deg, var(--prichod), var(--prichod-dark));
+    cursor:pointer;
+  }
+
+  .summary {
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .summary .box { background: var(--pill); border-radius:14px; padding:12px 10px; text-align:center; }
+  .summary .box .v { font-size:19px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .summary .box .k { font-size:11px; color:var(--muted); margin-top:2px; }
+
+  table.report {
+    width:100%;
+    border-collapse: collapse;
+    background: var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    overflow:hidden;
+    font-size:13px;
+  }
+  table.report th, table.report td {
+    padding: 9px 8px;
+    border-bottom: 1px solid var(--line);
+    text-align:left;
+  }
+  table.report th {
+    background: var(--pill);
+    font-size:11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing:0.02em;
+  }
+  table.report td.worked { font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  table.report td.times { font-variant-numeric:tabular-nums; color:var(--ink); }
+  table.report tr.weekend td { background:#FAF8F2; }
+  table.report tfoot td { font-weight:700; background:var(--pill); }
+  .tag {
+    font-size:10px; font-weight:700; color:white; padding:2px 7px; border-radius:999px; white-space:nowrap;
+  }
+  .tag.dov { background: var(--dov); }
+  .tag.pn  { background: var(--pn); }
+  .tag.prie{ background: var(--prie); }
+
+  .note { text-align:center; font-size:12px; color:var(--muted); margin-top:16px; }
+
+  .nav { display:flex; gap:8px; margin-bottom:18px; }
+  .nav a {
+    flex:1; text-align:center; padding:9px 6px; border-radius:10px;
+    background: var(--pill); font-size:12px; font-weight:700;
+    color: var(--muted); text-decoration:none;
+  }
+  .nav a.active { background: var(--prichod); color:white; }
+
+  @media print {
+    body { background: white; }
+    .controls, .note, .nav { display:none; }
+    .app { max-width: 100%; padding: 0; }
+    table.report { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="top">
+    <div>
+      <span class="label">Charita — mesačný výstup</span>
+      <div class="name" id="nameDisplay">Bublincová Miroslava</div>
+    </div>
+  </div>
+
+  <div class="nav" id="navLinks"></div>
+
+  <div class="controls">
+    <select id="monthSelect"></select>
+    <button class="printBtn" id="printBtn">Vytlačiť / uložiť ako PDF</button>
+  </div>
+
+  <div class="summary">
+    <div class="box"><div class="v" id="sumHours">0</div><div class="k">odpracovaných hodín</div></div>
+    <div class="box"><div class="v" id="sumDov">0</div><div class="k">dní dovolenky</div></div>
+    <div class="box"><div class="v" id="sumPn">0</div><div class="k">dní PN</div></div>
+  </div>
+
+  <table class="report">
+    <thead>
+      <tr>
+        <th>Dátum</th>
+        <th>Príchody / odchody</th>
+        <th>Odpracované</th>
+        <th>Poznámka</th>
+      </tr>
+    </thead>
+    <tbody id="reportBody"></tbody>
+    <tfoot>
+      <tr>
+        <td colspan="2">Spolu</td>
+        <td class="worked" id="footHours">0:00</td>
+        <td id="footNote"></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <div class="note">
+    Zdroj dát: appka Dochádzka a ručne zadané záznamy v Evidencii (v tomto telefóne/prehliadači).
+  </div>
+
+</div>
+
+<script>
+  const DEFAULT_NAME = "Bublincová Miroslava";
+  const params = new URLSearchParams(window.location.search);
+  const NAME = params.get("meno") ? decodeURIComponent(params.get("meno")) : DEFAULT_NAME;
+  document.title = "Mesačný výstup — " + NAME;
+  document.getElementById("nameDisplay").textContent = NAME;
+
+  const NAV_ITEMS = [
+    { href: "dochadzka.html", label: "Dochádzka" },
+    { href: "evidencia.html", label: "Evidencia" },
+    { href: "mesacny-vystup.html", label: "Mesačný výstup" }
+  ];
+  document.getElementById("navLinks").innerHTML = NAV_ITEMS.map(item=>{
+    const isActive = location.pathname.endsWith(item.href);
+    return `<a class="${isActive ? 'active' : ''}" href="${item.href}?meno=${encodeURIComponent(NAME)}">${item.label}</a>`;
+  }).join("");
+  const DOCH_KEY = "dochadzka_" + NAME.replace(/\s+/g, "_");
+  const ABS_KEY = "absencie_" + NAME.replace(/\s+/g, "_");
+  const DAY_NAMES = ["Ne","Po","Ut","St","Št","Pi","So"];
+  const MONTH_NAMES = ["január","február","marec","apríl","máj","jún","júl","august","september","október","november","december"];
+
+  function pad(n){ return n.toString().padStart(2,"0"); }
+  function fmtTime(iso){ const d = new Date(iso); return pad(d.getHours())+":"+pad(d.getMinutes()); }
+  function fmtDuration(ms){
+    const totalMin = Math.round(ms/60000);
+    return Math.floor(totalMin/60) + ":" + pad(totalMin % 60);
+  }
+  function computeWorkedMs(entries, dateKey){
+    if(!entries.length) return 0;
+    const first = new Date(entries[0].time);
+    const last = entries[entries.length-1];
+    const isToday = dateKey === (new Date().toISOString().slice(0,10));
+    const end = (last.type === "odchod") ? new Date(last.time) : (isToday ? new Date() : new Date(last.time));
+    return end - first;
+  }
+
+  function loadDochadzka(){ try { return JSON.parse(localStorage.getItem(DOCH_KEY)) || {}; } catch(e){ return {}; } }
+  function loadAbsencie(){ try { return JSON.parse(localStorage.getItem(ABS_KEY)) || []; } catch(e){ return []; } }
+
+  function daysInMonth(y,m){ return new Date(y, m, 0).getDate(); }
+
+  function absenceForDate(dateStr, absList){
+    return absList.find(a => dateStr >= a.od && dateStr <= (a.do || a.od));
+  }
+
+  function buildMonthOptions(){
+    const all = loadDochadzka();
+    const abs = loadAbsencie();
+    const set = new Set();
+    Object.keys(all).forEach(k => set.add(k.slice(0,7)));
+    abs.forEach(a => { set.add(a.od.slice(0,7)); if(a.do) set.add(a.do.slice(0,7)); });
+    const now = new Date();
+    set.add(now.getFullYear()+"-"+pad(now.getMonth()+1));
+    const nextMonth = new Date(now.getFullYear(), now.getMonth()+1, 1);
+    set.add(nextMonth.getFullYear()+"-"+pad(nextMonth.getMonth()+1));
+    const months = Array.from(set).sort().reverse();
+    const sel = document.getElementById("monthSelect");
+    sel.innerHTML = months.map(ym=>{
+      const [y,m] = ym.split("-");
+      return `<option value="${ym}">${MONTH_NAMES[parseInt(m)-1]} ${y}</option>`;
+    }).join("");
+    sel.value = now.getFullYear()+"-"+pad(now.getMonth()+1);
+    sel.addEventListener("change", render);
+  }
+
+  function render(){
+    const ym = document.getElementById("monthSelect").value;
+    const [y,m] = ym.split("-").map(Number);
+    const all = loadDochadzka();
+    const abs = loadAbsencie();
+    const n = daysInMonth(y,m);
+
+    let totalMs = 0, dov = 0, pn = 0;
+    let rows = "";
+    const labels = { dov: "DOVOLENKA", pn: "PN", prie: "PRIEPUSTKA" };
+
+    for(let d=1; d<=n; d++){
+      const dateStr = y+"-"+pad(m)+"-"+pad(d);
+      const jsDate = new Date(y, m-1, d);
+      const isWeekend = jsDate.getDay() === 0 || jsDate.getDay() === 6;
+      const entries = all[dateStr] || [];
+      const worked = computeWorkedMs(entries, dateStr);
+      totalMs += worked;
+
+      const klienti = [];
+      const times = entries.map(e=>{
+        const label = e.type === "prichod" ? "P" : (e.type === "prestup" ? "Pr" : "O");
+        let klientTxt = "";
+        if(e.type === "prichod" && e.klient){
+          klientTxt = " " + e.klient;
+          if(!klienti.includes(e.klient)) klienti.push(e.klient);
+        }
+        return label+" "+fmtTime(e.time)+klientTxt;
+      }).join(" · ");
+
+      const a = absenceForDate(dateStr, abs);
+      let noteHtml = "";
+      if(klienti.length){
+        noteHtml += klienti.map((k,i)=>`<div>Klient ${i+1}: ${k}</div>`).join("");
+      }
+      if(a){
+        noteHtml += `<span class="tag ${a.typ}">${labels[a.typ]}</span>`;
+        if(a.typ === "dov") dov++;
+        if(a.typ === "pn") pn++;
+      }
+
+      rows += `<tr class="${isWeekend ? 'weekend':''}">
+        <td>${pad(d)}.${pad(m)}. <span style="color:var(--muted)">${DAY_NAMES[jsDate.getDay()]}</span></td>
+        <td class="times">${times || "—"}</td>
+        <td class="worked">${worked > 0 ? fmtDuration(worked) : "—"}</td>
+        <td>${noteHtml}</td>
+      </tr>`;
+    }
+
+    document.getElementById("reportBody").innerHTML = rows;
+    document.getElementById("footHours").textContent = fmtDuration(totalMs);
+    document.getElementById("sumHours").textContent = Math.round(totalMs/3600000*10)/10;
+    document.getElementById("sumDov").textContent = dov;
+    document.getElementById("sumPn").textContent = pn;
+  }
+
+  document.getElementById("printBtn").addEventListener("click", ()=> window.print());
+
+  buildMonthOptions();
+  render();
+</script>
+</body>
+</html>
+
+f
