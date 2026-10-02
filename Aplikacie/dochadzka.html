@@ -99,6 +99,19 @@
   .summary .v { font-weight: 700; font-variant-numeric: tabular-nums; }
 
   .sync { text-align: center; font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .edit-toggle { width:100%; padding:12px; border-radius:12px; border:1px dashed var(--line); background:transparent; color:var(--muted); font-size:13px; font-weight:600; font-family:inherit; cursor:pointer; margin-bottom:12px; }
+  .edit-panel { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px 16px; margin-bottom:18px; }
+  .edit-panel input, .edit-panel select { padding:9px 10px; border-radius:10px; border:1px solid var(--line); background:var(--card); font-size:15px; font-family:inherit; color:var(--ink); }
+  .edit-lbl { display:block; font-size:12px; color:var(--muted); font-weight:600; margin-bottom:6px; }
+  #editDate { width:100%; margin-bottom:8px; }
+  .edit-row { display:grid; grid-template-columns:1fr 1fr auto; gap:6px; padding:10px 0; border-bottom:1px solid var(--line); }
+  .edit-row .er-klient { grid-column:1 / -1; }
+  .er-del { border:none; background:var(--pill); color:var(--odchod-dark); border-radius:10px; padding:0 12px; font-size:16px; cursor:pointer; }
+  .edit-add { margin:12px 0; background:none; border:none; color:var(--prichod-dark); font-weight:700; font-size:14px; cursor:pointer; padding:0; font-family:inherit; }
+  .edit-actions { display:flex; gap:8px; }
+  .edit-actions button { flex:1; padding:12px; border-radius:12px; border:none; font-weight:700; font-size:14px; font-family:inherit; cursor:pointer; }
+  .edit-save { background:var(--prichod); color:white; }
+  .edit-cancel { background:var(--pill); color:var(--muted); }
 </style>
 </head>
 <body>
@@ -153,6 +166,17 @@
   </div>
   <div class="log-card" id="logCard">
     <div class="empty">Zatiaľ žiadne záznamy</div>
+  </div>
+  <button type="button" class="edit-toggle" id="btnEditToggle">✎ Opraviť / doplniť záznamy</button>
+  <div class="edit-panel" id="editPanel" hidden>
+    <label class="edit-lbl" for="editDate">Deň</label>
+    <input type="date" id="editDate">
+    <div id="editRows"></div>
+    <button type="button" class="edit-add" id="btnEditAdd">+ Pridať záznam</button>
+    <div class="edit-actions">
+      <button type="button" class="edit-save" id="btnEditSave">Uložiť zmeny</button>
+      <button type="button" class="edit-cancel" id="btnEditCancel">Zrušiť</button>
+    </div>
   </div>
 
   <div class="sync" id="syncNote">
@@ -223,14 +247,21 @@
     return last.type; // "prichod" | "prestup"
   }
 
-  function computeWorkedMs(entries){
-    // Celý čas od prvého príchodu po posledný odchod sa počíta ako pracovný fond
-    // (vrátane prestupov medzi klientmi).
-    if(!entries.length) return 0;
-    const first = new Date(entries[0].time);
-    const last = entries[entries.length-1];
-    const end = last.type === "odchod" ? new Date(last.time) : new Date();
-    return end - first;
+    function computeWorkedMs(entries, dateKey){
+    // Ráta sa od príchodu po odchod. Presun medzi klientmi sa ráta,
+    // čas po odchode (až do ďalšieho príchodu) sa neráta.
+    let total = 0, start = null;
+    for(const e of entries){
+      const t = new Date(e.time);
+      if(e.type === "prichod" && start === null) start = t;
+      if(e.type === "odchod" && start !== null){ total += t - start; start = null; }
+    }
+    if(start !== null){
+      const last = new Date(entries[entries.length-1].time);
+      const isToday = !dateKey || dateKey === new Date().toISOString().slice(0,10);
+      total += (isToday ? new Date() : last) - start;
+    }
+    return total;
   }
   function fmtDuration(ms){
     const totalMin = Math.floor(ms/60000);
@@ -311,6 +342,93 @@
   });
   document.getElementById("btnPrestup").addEventListener("click", ()=> addEntry("prestup"));
   document.getElementById("btnOdchod").addEventListener("click", ()=> addEntry("odchod"));
+  // ===== OPRAVY ZÁZNAMOV =====
+  const editPanel = document.getElementById("editPanel");
+  const editDate  = document.getElementById("editDate");
+  const editRows  = document.getElementById("editRows");
+
+  function hhmm(iso){ const d = new Date(iso); return pad(d.getHours())+":"+pad(d.getMinutes()); }
+
+  function rowHtml(e){
+    const t = e.time ? hhmm(e.time) : "";
+    const sel = v => e.type === v ? "selected" : "";
+    return `<div class="edit-row">
+      <select class="er-type">
+        <option value="prichod" ${sel("prichod")}>Príchod</option>
+        <option value="prestup" ${sel("prestup")}>Presun</option>
+        <option value="odchod" ${sel("odchod")}>Odchod</option>
+      </select>
+      <input type="time" class="er-time" value="${t}">
+      <button type="button" class="er-del" title="Zmazať">✕</button>
+      <input type="text" class="er-klient" list="klientList" placeholder="klient" value="${e.klient || ""}">
+    </div>`;
+  }
+
+  function loadEditDay(){
+    const entries = loadAll()[editDate.value] || [];
+    editRows.innerHTML = entries.length
+      ? entries.map(rowHtml).join("")
+      : '<div class="empty">V tento deň nie sú záznamy</div>';
+  }
+
+    function pinOk(){
+    const pin = prompt("Zadaj PIN pre opravy:");
+    if(pin === null) return false;
+    if(Number(pin.trim()) * 7 + 1234 === 633894) return true;
+    alert("Nesprávny PIN.");
+    return false;
+  }
+
+  document.getElementById("btnEditToggle").addEventListener("click", ()=>{
+    if(editPanel.hidden){
+      if(!pinOk()) return;
+      editDate.value = todayKey();
+      loadEditDay();
+      editPanel.hidden = false;
+    } else {
+      editPanel.hidden = true;
+    }
+  });
+  editDate.addEventListener("change", loadEditDay);
+
+  document.getElementById("btnEditAdd").addEventListener("click", ()=>{
+    const empty = editRows.querySelector(".empty");
+    if(empty) empty.remove();
+    editRows.insertAdjacentHTML("beforeend", rowHtml({ type: "prichod", time: "" }));
+  });
+
+  editRows.addEventListener("click", ev=>{
+    if(ev.target.classList.contains("er-del") && confirm("Naozaj zmazať tento záznam?")){
+      ev.target.closest(".edit-row").remove();
+    }
+  });
+
+  document.getElementById("btnEditSave").addEventListener("click", ()=>{
+    const day = editDate.value;
+    if(!day){ alert("Vyber deň."); return; }
+    const list = [];
+    for(const r of editRows.querySelectorAll(".edit-row")){
+      const type = r.querySelector(".er-type").value;
+      const time = r.querySelector(".er-time").value;
+      const klient = r.querySelector(".er-klient").value.trim();
+      if(!time){ alert("Každý záznam musí mať čas."); return; }
+      if(type === "prichod" && !klient){ alert("Pri príchode zadaj klienta."); return; }
+      const e = { type, time: new Date(day + "T" + time).toISOString() };
+      if(klient) e.klient = klient;
+      list.push(e);
+    }
+    list.sort((a,b)=> a.time.localeCompare(b.time));
+    const all = loadAll();
+    if(list.length) all[day] = list; else delete all[day];
+    saveAll(all);
+    render();
+    refreshKlientList();
+    editPanel.hidden = true;
+    alert("Uložené.");
+  });
+
+  document.getElementById("btnEditCancel").addEventListener("click", ()=>{ editPanel.hidden = true; });
+
 
   function tickClock(){
     const now = new Date();
