@@ -375,7 +375,18 @@ function osviezDochadzku(){
 osviezDochadzku();
 setInterval(osviezDochadzku, 30000);
 </script>
-
+<script>
+  // Zoradí karty opatrovateliek podľa abecedy (priezviska)
+  {
+    const mriezka = document.querySelector(".mriezka");
+    if(mriezka){
+      [...mriezka.querySelectorAll(":scope > .sluzba")]
+        .sort((a,b)=> a.querySelector(".meno").textContent.trim()
+          .localeCompare(b.querySelector(".meno").textContent.trim(), "sk"))
+        .forEach(k => mriezka.appendChild(k));
+    }
+  }
+</script>
 </body>
 </html>
 
