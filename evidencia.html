@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Evidencia — Bublincová Miroslava</title>
+<style>
+  :root{
+    --bg: #F6F4EE;
+    --card: #FFFFFF;
+    --ink: #2B2A25;
+    --muted: #8A8577;
+    --line: #E4E0D4;
+    --prichod: #2F6F62;
+    --prichod-dark: #234F45;
+    --prestup: #D69A2D;
+    --odchod: #B4502C;
+    --odchod-dark: #8C3D22;
+    --pill: #EFEAD9;
+    --dov: #4C7FB0;
+    --pn: #A63D5B;
+    --prie: #6B6540;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  body { display:flex; justify-content:center; padding-bottom:40px; }
+  .app { width:100%; max-width: 620px; padding: 26px 18px 20px; }
+
+  .top { margin-bottom: 14px; }
+  .top .label { font-size:12px; color:var(--muted); }
+  .top .name { font-size:24px; font-weight:700; }
+
+  .nav { display:flex; gap:8px; margin-bottom:22px; }
+  .nav a {
+    flex:1; text-align:center; padding:9px 6px; border-radius:10px;
+    background: var(--pill); font-size:12px; font-weight:700;
+    color: var(--muted); text-decoration:none;
+  }
+  .nav a.active { background: var(--prichod); color:white; }
+
+  .summary {
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:10px;
+    margin-bottom:22px;
+  }
+  .summary .box {
+    background: var(--pill);
+    border-radius: 14px;
+    padding: 12px 10px;
+    text-align:center;
+  }
+  .summary .box .v { font-size:19px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .summary .box .k { font-size:11px; color:var(--muted); margin-top:2px; }
+
+  h2.section {
+    font-size:15px;
+    margin: 24px 0 10px;
+  }
+
+  /* FORM */
+  .form-card {
+    background: var(--card);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:16px;
+  }
+  .form-row { margin-bottom:12px; }
+  .form-row label {
+    display:block;
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:5px;
+    font-weight:600;
+  }
+  .form-row select, .form-row input {
+    width:100%;
+    padding:11px 12px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    font-size:15px;
+    background:#FBFAF6;
+    color:var(--ink);
+    font-family:inherit;
+  }
+  .form-dates { display:flex; gap:10px; }
+  .form-dates .form-row { flex:1; }
+  button.submit {
+    width:100%;
+    border:none;
+    border-radius:12px;
+    padding:14px;
+    font-size:15px;
+    font-weight:700;
+    color:white;
+    background: linear-gradient(135deg, var(--prichod), var(--prichod-dark));
+    cursor:pointer;
+  }
+
+  /* TABLE - DAYS */
+  .day-card {
+    background: var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding: 4px 14px;
+    margin-bottom:10px;
+  }
+  .day-row {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:11px 0;
+    border-bottom:1px solid var(--line);
+    font-size:14px;
+    gap:10px;
+  }
+  .day-row:last-child{ border-bottom:none; }
+  .day-row .date { font-weight:700; min-width:78px; }
+  .day-row .times { color:var(--muted); flex:1; font-variant-numeric:tabular-nums; }
+  .day-row .worked {
+    font-weight:700;
+    font-variant-numeric:tabular-nums;
+    background: var(--pill);
+    border-radius:999px;
+    padding:3px 10px;
+    font-size:12px;
+  }
+  .day-row .del {
+    color: var(--muted);
+    font-size:15px;
+    cursor:pointer;
+    padding: 0 2px;
+    flex-shrink:0;
+  }
+  .entry-detail {
+    padding: 6px 0 2px;
+    display:flex;
+    flex-wrap:wrap;
+    gap: 6px 10px;
+  }
+  .entry-detail .item {
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    background: var(--pill);
+    border-radius:999px;
+    padding: 3px 6px 3px 10px;
+  }
+  .entry-detail .item .x {
+    cursor:pointer;
+    color: var(--muted);
+    font-size:13px;
+  }
+
+  /* ABSENCE LIST */
+  .abs-card {
+    background: var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:4px 14px;
+    margin-bottom:10px;
+  }
+  .abs-row {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px 0;
+    border-bottom:1px solid var(--line);
+    font-size:14px;
+    gap:10px;
+  }
+  .abs-row:last-child{ border-bottom:none; }
+  .abs-row .tag {
+    font-size:11px;
+    font-weight:700;
+    color:white;
+    padding:3px 9px;
+    border-radius:999px;
+    white-space:nowrap;
+  }
+  .tag.dov { background: var(--dov); }
+  .tag.pn  { background: var(--pn); }
+  .tag.prie{ background: var(--prie); }
+  .abs-row .range { flex:1; text-align:right; color:var(--ink); font-variant-numeric:tabular-nums; }
+  .abs-row .del {
+    color: var(--muted);
+    font-size:16px;
+    cursor:pointer;
+    padding: 0 2px;
+  }
+
+  .empty { padding:20px 0; text-align:center; color:var(--muted); font-size:13px; }
+
+  .note {
+    text-align:center;
+    font-size:12px;
+    color:var(--muted);
+    margin-top:22px;
+    line-height:1.5;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="top">
+    <span class="label">Charita — evidencia</span>
+    <div class="name" id="nameDisplay">Bublincová Miroslava</div>
+  </div>
+
+  <div class="nav" id="navLinks"></div>
+
+  <div class="summary">
+    <div class="box"><div class="v" id="sumHours">0</div><div class="k">hod. tento mesiac</div></div>
+    <div class="box"><div class="v" id="sumDov">0</div><div class="k">dní dovolenky</div></div>
+    <div class="box"><div class="v" id="sumPn">0</div><div class="k">dní PN</div></div>
+  </div>
+
+  <h2 class="section">Pridať dovolenku / PN / priepustku</h2>
+  <div class="form-card">
+    <div class="form-row">
+      <label>Typ</label>
+      <select id="typSelect">
+        <option value="dov">Dovolenka</option>
+        <option value="pn">PN-ka</option>
+        <option value="prie">Priepustka</option>
+      </select>
+    </div>
+    <div class="form-dates">
+      <div class="form-row">
+        <label>Od</label>
+        <input type="date" id="odInput">
+      </div>
+      <div class="form-row">
+        <label>Do</label>
+        <input type="date" id="doInput">
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Poznámka (nepovinné)</label>
+      <input type="text" id="poznamkaInput" placeholder="napr. rodinné dôvody">
+    </div>
+    <button class="submit" id="addAbsBtn">Pridať záznam</button>
+  </div>
+
+  <h2 class="section">Dovolenka, PN, priepustky</h2>
+  <div class="abs-card" id="absCard">
+    <div class="empty">Zatiaľ žiadne záznamy</div>
+  </div>
+
+  <h2 class="section">Doplniť alebo opraviť príchod / prestup / odchod</h2>
+  <div class="form-card">
+    <div class="form-dates">
+      <div class="form-row">
+        <label>Dátum</label>
+        <input type="date" id="dochDateInput">
+      </div>
+      <div class="form-row">
+        <label>Čas</label>
+        <input type="time" id="dochTimeInput">
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Typ</label>
+      <select id="dochTypSelect">
+        <option value="prichod">Príchod</option>
+        <option value="prestup">Prestup</option>
+        <option value="odchod">Odchod</option>
+      </select>
+    </div>
+    <div class="form-row" id="dochKlientRow">
+      <label>Meno klienta</label>
+      <input type="text" id="dochKlientInput" placeholder="napr. Václavíková">
+    </div>
+    <button class="submit" id="addDochBtn">Pridať záznam</button>
+  </div>
+
+  <h2 class="section">Príchody a odchody</h2>
+  <div class="day-card" id="daysCard">
+    <div class="empty">Zatiaľ žiadne záznamy z appky</div>
+  </div>
+
+  <div class="note">
+    Príchody a odchody sa sem načítavajú z appky Dochádzka (z tohto telefónu/prehliadača).
+    Dovolenka, PN a priepustky sa pridávajú ručne vyššie. Pre zdieľanie medzi zariadeniami
+    treba nastaviť online synchronizáciu (napr. cez Google Sheets).
+  </div>
+
+</div>
+
+<script>
+  const DEFAULT_NAME = "Bublincová Miroslava";
+  const params = new URLSearchParams(window.location.search);
+  const NAME = params.get("meno") ? decodeURIComponent(params.get("meno")) : DEFAULT_NAME;
+  document.title = "Evidencia — " + NAME;
+  document.getElementById("nameDisplay").textContent = NAME;
+
+  const NAV_ITEMS = [
+    { href: "dochadzka.html", label: "Dochádzka" },
+    { href: "evidencia.html", label: "Evidencia" },
+    { href: "mesacny-vystup.html", label: "Mesačný výstup" }
+  ];
+  document.getElementById("navLinks").innerHTML = NAV_ITEMS.map(item=>{
+    const isActive = location.pathname.endsWith(item.href);
+    return `<a class="${isActive ? 'active' : ''}" href="${item.href}?meno=${encodeURIComponent(NAME)}">${item.label}</a>`;
+  }).join("");
+  const DOCH_KEY = "dochadzka_" + NAME.replace(/\s+/g, "_");
+  const ABS_KEY = "absencie_" + NAME.replace(/\s+/g, "_");
+
+  function pad(n){ return n.toString().padStart(2,"0"); }
+  function fmtTime(iso){
+    const d = new Date(iso);
+    return pad(d.getHours())+":"+pad(d.getMinutes());
+  }
+  function fmtDateShort(key){
+    const [y,m,d] = key.split("-");
+    return d+"."+m+".";
+  }
+  function fmtDateSk(iso){
+    if(!iso) return "";
+    const [y,m,d] = iso.split("-");
+    return d+"."+m+"."+y;
+  }
+
+  function loadDochadzka(){
+    try { return JSON.parse(localStorage.getItem(DOCH_KEY)) || {}; }
+    catch(e){ return {}; }
+  }
+  function loadAbsencie(){
+    try { return JSON.parse(localStorage.getItem(ABS_KEY)) || []; }
+    catch(e){ return []; }
+  }
+  function saveAbsencie(list){
+    localStorage.setItem(ABS_KEY, JSON.stringify(list));
+  }
+
+    function computeWorkedMs(entries, dateKey){
+    // Ráta sa od príchodu po odchod. Presun medzi klientmi sa ráta,
+    // čas po odchode (až do ďalšieho príchodu) sa neráta.
+    let total = 0, start = null;
+    for(const e of entries){
+      const t = new Date(e.time);
+      if(e.type === "prichod" && start === null) start = t;
+      if(e.type === "odchod" && start !== null){ total += t - start; start = null; }
+    }
+    if(start !== null){
+      const last = new Date(entries[entries.length-1].time);
+      const isToday = !dateKey || dateKey === new Date().toISOString().slice(0,10);
+      total += (isToday ? new Date() : last) - start;
+    }
+    return total;
+  }
+  function todayKey(){ return new Date().toISOString().slice(0,10); }
+  function fmtDuration(ms){
+    const totalMin = Math.round(ms/60000);
+    const h = Math.floor(totalMin/60);
+    const m = totalMin % 60;
+    return h + ":" + pad(m);
+  }
+  function daysBetween(od, doD){
+    const a = new Date(od), b = new Date(doD);
+    return Math.round((b-a)/86400000) + 1;
+  }
+
+  function saveDochadzka(all){
+    localStorage.setItem(DOCH_KEY, JSON.stringify(all));
+  }
+
+  function renderDays(){
+    const all = loadDochadzka();
+    const keys = Object.keys(all).sort().reverse();
+    const card = document.getElementById("daysCard");
+    if(keys.length === 0){
+      card.innerHTML = '<div class="empty">Zatiaľ žiadne záznamy z appky</div>';
+      return;
+    }
+    card.innerHTML = keys.map(key=>{
+      const entries = all[key];
+      const chips = entries.map((e, idx)=>{
+        const label = e.type === "prichod" ? "P" : (e.type === "prestup" ? "Pr" : "O");
+        const klient = (e.type === "prichod" && e.klient) ? " " + e.klient : "";
+        return `<span class="item">${label} ${fmtTime(e.time)}${klient}
+          <span class="x" data-key="${key}" data-idx="${idx}">✕</span></span>`;
+      }).join("");
+      const worked = fmtDuration(computeWorkedMs(entries, key));
+      return `<div class="day-row" style="flex-direction:column; align-items:stretch;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="date">${fmtDateShort(key)}</span>
+          <span class="worked">${worked}</span>
+        </div>
+        <div class="entry-detail">${chips}</div>
+      </div>`;
+    }).join("");
+
+    card.querySelectorAll(".entry-detail .x").forEach(el=>{
+      el.addEventListener("click", ()=>{
+        const key = el.getAttribute("data-key");
+        const idx = parseInt(el.getAttribute("data-idx"));
+        const all = loadDochadzka();
+        all[key].splice(idx, 1);
+        if(all[key].length === 0) delete all[key];
+        saveDochadzka(all);
+        renderDays();
+        renderSummary();
+      });
+    });
+  }
+
+  function renderAbsencie(){
+    const list = loadAbsencie();
+    const card = document.getElementById("absCard");
+    if(list.length === 0){
+      card.innerHTML = '<div class="empty">Zatiaľ žiadne záznamy</div>';
+    } else {
+      card.innerHTML = list.slice().reverse().map((a, revIdx)=>{
+        const idx = list.length - 1 - revIdx;
+        const labels = { dov: "DOVOLENKA", pn: "PN", prie: "PRIEPUSTKA" };
+        const range = a.od === a.do ? fmtDateSk(a.od) : (fmtDateSk(a.od) + " – " + fmtDateSk(a.do));
+        return `<div class="abs-row">
+          <span class="tag ${a.typ}">${labels[a.typ]}</span>
+          <span class="range">${range}${a.poznamka ? " · "+a.poznamka : ""}</span>
+          <span class="del" data-idx="${idx}">✕</span>
+        </div>`;
+      }).join("");
+      card.querySelectorAll(".del").forEach(el=>{
+        el.addEventListener("click", ()=>{
+          const i = parseInt(el.getAttribute("data-idx"));
+          const l = loadAbsencie();
+          l.splice(i,1);
+          saveAbsencie(l);
+          renderAbsencie();
+          renderSummary();
+        });
+      });
+    }
+  }
+
+  function renderSummary(){
+    const all = loadDochadzka();
+    const now = new Date();
+    const ym = now.getFullYear()+"-"+pad(now.getMonth()+1);
+    let totalMs = 0;
+    Object.keys(all).forEach(key=>{
+      if(key.startsWith(ym)) totalMs += computeWorkedMs(all[key], key);
+    });
+    document.getElementById("sumHours").textContent = Math.round(totalMs/3600000 * 10)/10;
+
+    const abs = loadAbsencie();
+    let dov = 0, pn = 0;
+    abs.forEach(a=>{
+      const days = daysBetween(a.od, a.do || a.od);
+      if(a.typ === "dov") dov += days;
+      if(a.typ === "pn") pn += days;
+    });
+    document.getElementById("sumDov").textContent = dov;
+    document.getElementById("sumPn").textContent = pn;
+  }
+
+  document.getElementById("dochTypSelect").addEventListener("change", (e)=>{
+    document.getElementById("dochKlientRow").style.display =
+      e.target.value === "prichod" ? "block" : "none";
+  });
+
+  document.getElementById("addDochBtn").addEventListener("click", ()=>{
+    const date = document.getElementById("dochDateInput").value;
+    const time = document.getElementById("dochTimeInput").value;
+    const typ = document.getElementById("dochTypSelect").value;
+    const klient = document.getElementById("dochKlientInput").value.trim();
+    if(!date || !time){ alert("Vyplň dátum aj čas."); return; }
+
+    const iso = new Date(date + "T" + time + ":00").toISOString();
+    const all = loadDochadzka();
+    if(!all[date]) all[date] = [];
+    const entry = { type: typ, time: iso };
+    if(typ === "prichod" && klient) entry.klient = klient;
+    all[date].push(entry);
+    all[date].sort((a,b)=> new Date(a.time) - new Date(b.time));
+    saveDochadzka(all);
+
+    document.getElementById("dochTimeInput").value = "";
+    document.getElementById("dochKlientInput").value = "";
+    renderDays();
+    renderSummary();
+  });
+
+  document.getElementById("addAbsBtn").addEventListener("click", ()=>{
+    const typ = document.getElementById("typSelect").value;
+    const od = document.getElementById("odInput").value;
+    let doD = document.getElementById("doInput").value;
+    const poznamka = document.getElementById("poznamkaInput").value.trim();
+    if(!od){ alert("Vyplň dátum Od."); return; }
+    if(!doD){ doD = od; }
+    const list = loadAbsencie();
+    list.push({ typ, od, do: doD, poznamka });
+    saveAbsencie(list);
+    document.getElementById("odInput").value = "";
+    document.getElementById("doInput").value = "";
+    document.getElementById("poznamkaInput").value = "";
+    renderAbsencie();
+    renderSummary();
+  });
+
+  renderDays();
+  renderAbsencie();
+  renderSummary();
+</script>
+</body>
+</html>
+
