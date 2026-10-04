@@ -3,392 +3,293 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
     <title>Rozpis služieb - Charita sv. Alžbety</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+      /* --- PRIHLÁSENIE --- */
+      .prihlasenie {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      .prihlasenie-karta {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        padding: 32px 28px 28px;
+        width: 100%;
+        max-width: 340px;
+        text-align: center;
+        font-family: Arial, sans-serif;
+      }
+      .prihlasenie-karta img { height: 48px; width: auto; }
+      .prihlasenie-karta h2 {
+        color: #b5651d;
+        font-size: 18px;
+        margin: 12px 0 4px;
+      }
+      .prihlasenie-karta p {
+        color: #6b7280;
+        font-size: 14px;
+        margin: 0 0 20px;
+      }
+      .prihlasenie-karta input {
+        width: 100%;
+        box-sizing: border-box;
+        font-size: 26px;
+        letter-spacing: 0.4em;
+        text-align: center;
+        padding: 12px;
+        border: 2px solid #d1d5db;
+        border-radius: 12px;
+        outline: none;
+      }
+      .prihlasenie-karta input:focus { border-color: #b5651d; }
+      .prihlasenie-karta button {
+        width: 100%;
+        margin-top: 14px;
+        padding: 13px;
+        border: none;
+        border-radius: 12px;
+        background: #b5651d;
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .prihlasenie-karta button:disabled { opacity: 0.6; cursor: wait; }
+      .chyba {
+        color: #c0392b;
+        font-size: 14px;
+        min-height: 20px;
+        margin-top: 12px;
+      }
+
+      /* --- HORNÝ RIADOK S MESIACOM --- */
+      .horny-riadok {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+      }
+      .horny-riadok select {
+        padding: 6px 10px;
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        font-size: 14px;
+      }
+      .odhlasit {
+        background: none;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-size: 13px;
+        color: #6b7280;
+        cursor: pointer;
+      }
+      .header-right { text-align: right; font-size: 13px; color: #6b7280; }
+      .nacitavam {
+        text-align: center;
+        color: #6b7280;
+        padding: 40px 10px;
+        font-family: Arial, sans-serif;
+      }
+      [hidden] { display: none !important; }
+    </style>
 </head>
 <body>
-<div style="text-align: center; výplň: 10px; Veľkosť písma: 14px;" >
-  <a href="index.html">Október</a> &nbsp;|&nbsp;
-  <a href="september-2026.html">September (archív)</a> &nbsp;|&nbsp;
-  <a href="https://1drv.ms/x/c/1db0c454251a3129/IQAM-Cu5MZ0KQrlkdJ6T36GZAaacV3JRQoOKE30SoqPTqVU?e=wRfeUE" target="_blank">Otvoriť celý rozpis v Exceli</a>
+
+<!-- ===== PRIHLÁSENIE ===== -->
+<div class="prihlasenie" id="prihlasenie" hidden>
+  <div class="prihlasenie-karta">
+    <img src="logo.png.jpg" alt="Logo Charita">
+    <h2>Charita sv. Alžbety</h2>
+    <p>Zadaj svoj PIN</p>
+    <input id="pinInput" type="password" inputmode="numeric" autocomplete="off" maxlength="10">
+    <button id="pinBtn" type="button">Prihlásiť</button>
+    <div class="chyba" id="pinChyba"></div>
+  </div>
 </div>
-    <!-- HLAVIČKA -->
-    <header>
-        <div class="logo-container">
-            <img src="logo.png.jpg" alt="Logo Charita" class="logo-img">
-            <span>Charita sv. Alžbety</span>
-        </div>
-        <h1>ROZPIS SLUŽIEB: OKTÓBER 2026</h1>
-        <div class="header-right"></div>
-    </header>
 
+<!-- ===== HLAVNÁ STRÁNKA ===== -->
+<div id="obsah" hidden>
+  <div class="horny-riadok">
+    <label for="mesiacSelect">Mesiac:</label>
+    <select id="mesiacSelect"></select>
+    <button class="odhlasit" id="odhlasitBtn" type="button">Odhlásiť</button>
+  </div>
 
-    <div class="table-container" tabindex="0">
-        <table>
-  <tr>
-    <th class="stlpec-meno">Meno klienta</th>
-    <th class="stlpec-cas">DEŇ/ČAS</th> 
-    <th>1/št</th>
-    <th>2/pi</th><th>3/so</th><th>4/ne</th><th>5/po</th><th>6/ut</th><th>7/st</th><th>8/št</th><th>9/pi</th><th>10/so</th><th>11/ne</th><th>12/po</th><th>13/ut</th><th>14/st</th><th>15/št</th><th>16/pi</th><th>17/so</th><th>18/ne</th><th>19/po</th><th>20/ut</th><th>21/st</th><th>22/št</th><th>23/pi</th><th>24/so</th><th>25/ne</th><th>26/po</th><th>27/ut</th><th>28/st</th><th>29/št</th><th>30/pi</th><th>31/so</th>
-  </tr>
-  <tr>
-    <td class="stlpec-meno" rowspan="4">Václavíková</td>
-    <td class="stlpec-cas">Ráno</td>
-    <td class="č">Č</td><td class="b">B</td><td class="lau">Lau</td><td class="lau">Lau</td><td class="č">Č</td><td class="m">M</td><td class="b">B</td><td class="č">Č</td><td class="č">Č</td><td class="b">B</td><td class="b">B</td><td class="m">M</td><td class="p">P</td><td class="p">P</td><td class="č">Č</td><td class="j">J</td><td class="lau">Lau</td><td class="lau">Lau</td><td class="j">J</td><td class="j">J</td><td class="p">P</td><td class="č">Č</td><td class="b">B</td><td class="č">Č</td><td class="č">Č</td><td class="m">M</td><td class="j">J</td><td class="m">M</td><td class="č">Č</td><td class="p">P</td><td class="b">B</td>
-  </tr>
-  <tr>
-    
-    <td class="stlpec-cas">Obed</td>
-    <td class="lau">Lau</td><td class="č">Č</td><td class="lau">Lau</td><td class="lau">Lau</td><td class="č">Č</td><td class="m">M</td><td class="m">M</td><td class="lau">Lau</td><td class="č">Č</td><td class="b">B</td><td class="b">B</td><td class="m">M</td><td class="j">J</td><td class="m">M</td><td class="lau">Lau</td><td class="j">J</td><td class="lau">Lau</td><td class="lau">Lau</td><td class="j">J</td><td class="j">J</td><td class="j">J</td><td class="b">B</td><td class="j">J</td><td class="č">Č</td><td class="č">Č</td><td class="m">M</td><td class="m">M</td><td class="m">M</td><td class="lau">Lau</td><td class="b">B</td><td class="b">B</td>
-  </tr>
-  <tr>
-    
-    <td class="stlpec-cas">Poludnie</td>
-    <td class="č">Č</td><td class="j">J</td><td class="lau">Lau</td><td class="lau">Lau</td><td class="m">M</td><td class="p">P</td><td class="m">M</td><td class="č">Č</td><td class="lau">Lau</td><td class="b">B</td><td class="b">B</td><td class="m">M</td><td class="lau">Lau</td><td class="m">M</td><td class="č">Č</td><td class="p">P</td><td class="lau">Lau</td><td class="lau">Lau</td><td class="m">M</td><td class="j">J</td><td class="j">J</td><td class="č">Č</td><td class="j">J</td><td class="č">Č</td><td class="č">Č</td><td class="j">J</td><td class="b">B</td><td class="m">M</td><td class="č">Č</td><td class="p">P</td><td class="b">B</td>
-  </tr>
-  <tr>
-    
-    <td class="stlpec-cas">Večer</td>
-    <td></td><td></td><td class="lau">Lau</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="b">B</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="lau">Lau</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="č">Č</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="b">B</td>
-  </tr>  
-  <tr>
-    <td class="stlpec-meno">Hazucha</td>
-    <td class="stlpec-cas">14-16hod</td>
-    <td></td><td></td><td></td><td></td><td class="l">L</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="l">L</td><td class="l">L</td><td class="l">L</td><td></td><td></td><td></td><td></td><td class="l">L</td><td class="l">L</td><td></td><td></td><td></td><td></td><td></td><td class="l">L</td><td class="l">L</td><td class="l">L</td><td></td><td></td><td></td>
-  </tr> 
-  <tr>
-    <td class="stlpec-meno" rowspan="3">Chovncová</td>
-    <td class="stlpec-cas">8-13 hod</td>
-    <td class="h">H</td><td></td><td></td><td></td><td class="l">L</td><td class="ď">Ď</td><td class="ď">Ď</td><td class="h">H</td><td class="j">J</td><td class="kin">Kin</td><td class="kin">Kin</td><td class="l">L</td><td class="l">L</td><td class="l">L</td><td class="p">P</td><td class="p">P</td><td class="kin">Kin</td><td class="kin">Kin</td><td class="l">L</td><td class="ď">Ď</td><td class="ď">Ď</td><td class="kam">Kam</td><td class="kam">Kam</td><td class="kin">Kin</td><td class="kin">Kin</td><td class="l">L</td><td class="l">L</td><td class="kam">Kam</td><td class="j">J</td><td class="h">H</td><td class="kin">Kin</td>
-  </tr>   
-  <tr>
-    
-    <td class="stlpec-cas">13-16 hod</td>
-    <td class="p">P</td><td></td><td></td><td></td><td class="j">J</td><td class="l">L</td><td class="h">H</td><td class="kam">Kam</td><td class="j">J</td><td class="kin">Kin</td><td class="kin">Kin</td><td class="p">P</td><td class="h">H</td><td class="h">H</td><td class="kam">Kam</td><td class="kam">Kam</td><td class="kin">Kin</td><td class="kin">Kin</td><td class="j">J</td><td class="l">L</td><td class="h">H</td><td class="p">P</td><td class="kam">Kam</td><td class="kin">Kin</td><td class="kin">Kin</td><td class="kam">Kam</td><td class="kam">Kam</td><td class="l">L</td><td class="h">H</td><td class="j">J</td><td class="kin">Kin</td>
-  </tr>   
-  <tr>
-    
-    <td class="stlpec-cas">16-20 hod</td>
-    <td class="p">P</td><td></td><td></td><td class="kin">Kin</td><td class="p">P</td><td class="l">L</td><td class="h">H</td><td class="kam">Kam</td><td class="j">J</td><td class="kin">Kin</td><td class="kin">Kin</td><td class="p">P</td><td class="j">J</td><td class="h">H</td><td class="kam">Kam</td><td class="kam">Kam</td><td class="kin">Kin</td><td class="kin">Kin</td><td class="p">P</td><td class="l">L</td><td class="h">H</td><td class="p">P</td><td class="l">L</td><td class="kin">Kin</td><td class="kin">Kin</td><td class="kam">Kam</td><td class="kam">Kam</td><td class="l">L</td><td class="h">H</td><td class="j">J</td><td class="kin">Kin</td>
-  </tr> 
-  <tr>
-    <td class="stlpec-meno">Šályová</td>
-    <td class="stlpec-cas">7-15 hod</td>
-    <td class="kam">Kam</td><td class="lau">Lau</td><td></td><td></td><td class="b">B</td><td class="l">Lau</td><td class="b">B</td><td class="b">B</td><td class="b">B</td><td></td><td></td><td class="lau">Lau</td><td class="lau">Lau</td><td class="b">B</td><td class="b">B</td><td class="b">B</td><td></td><td></td><td class="b">B</td><td class="b">B</td><td class="kam">Kam</td><td class="lau">Lau</td><td class="lau">Lau</td><td></td><td></td><td class="b">B</td><td class="b">B</td><td class="b">B</td><td class="kam">Kam</td><td class="kam">Kam</td>
-  </tr> 
-  <tr>
-    <td class="stlpec-meno">Šatara</td>
-    <td class="stlpec-cas">Obed</td>
-    <td class="h">H</td><td class="j">J</td><td></td><td></td><td class="ď">Ď</td><td class="moz">Moz</td><td class="j">J</td><td class="h">H</td><td></td><td></td><td></td><td class="ď">Ď</td><td class="p">P</td><td class="p">P</td><td class="j">J</td><td class="moz">Moz</td><td></td><td></td><td class="ď">Ď</td><td class="h">H</td><td class="p">P</td><td class="p">P</td><td class="h">H</td><td></td><td></td><td class="ď">Ď</td><td class="j">J</td><td class="j">J</td><td class="J">J</td><td></td><td></td>
-  </tr> 
-  <tr>
-    <td class="stlpec-meno">Liptáková</td>
-    <td class="stlpec-cas">Poludnie</td>
-    <td class="j">J</td><td class="moz">Moz</td><td></td><td></td><td class="ď">Ď</td><td class="p">P</td><td class="p">P</td><td class="j">J</td><td class="ď">Ď</td><td></td><td></td><td class="ď">Ď</td><td class="h">H</td>><td class="j">J</td><td class="p">P</td><td class="p">P</td><td></td><td></td><td class="ď">Ď</td><td class="h">H</td><td class="j">J</td><td class="j">J</td><td class="p">P</td><td></td><td></td><td class="h">H</td><td class="h">H</td><td class="moz">Moz</td><td class="p">P</td><td class="h">H</td><td></td>
-  </tr>  
-  <tr>
-    <td class="stlpec-meno">Švecová</td>
-    <td class="stlpec-cas">8-12 hod</td>
-    <td class="ď">Ď</td><td></td><td></td><td></td><td></td><td class="p">P</td><td class="p">P</td><td class="ď">Ď</td><td></td><td></td><td></td><td></td><td class="ď">Ď</td><td class="ď">Ď</td><td class="ď">Ď</td><td class="ď">Ď</td><td></td><td></td><td></td><td></td><td></td><td class="ď">Ď</td><td class="ď">Ď</td>><td></td>><td></td>><td></td><td class="ď">Ď</td><td class="ď">Ď</td><td class="p">P</td><td></td><td></td>
-  </tr> 
-  <tr>
-    <td class="stlpec-meno">Stieranková</td>
-    <td class="stlpec-cas">7-15 hod</td>
-    <td class="b">B</td><td class="l">L</td><td></td><td></td><td class="h">H</td><td class="h">H</td><td class="lau">Lau</td><td class="l">L</td><td class="lau">Lau</td><td></td><td></td><td class="h">H</td><td class="b">B</td><td class="lau">Lau</td><td class="h">H</td><td class="h">H</td><td></td><td></td><td class="h">H</td><td class="lau">Lau</td><td class="b">B</td><td class="h">H</td><td class="h">H</td><td></td><td></td><td class="lau">Lau</td><td class="lau">Lau</td><td class="h">H</td><td class="b">B</td><td class="lau">Lau</td><td></td>
-  </tr> 
-  <tr>
-    <td class="stlpec-meno">Drugdová</td>
-    <td class="stlpec-cas">10-14 hod</td>
-    <td class="č">Č</td><td class="b">B</td><td></td><td></td><td class="p">P</td><td class="s">S</td><td class="b">B</td><td class="č">Č</td><td class="s">S</td><td></td><td></td><td class="s">S</td><td class="p">P</td><td class="p">P</td><td class="č">Č</td><td class="s">S</td><td></td><td></td><td class="p">P</td><td class="s">S</td><td class="p">P</td><td class="č">Č</td><td class="b">B</td><td></td><td></td><td class="j"></td><td class="j"></td><td class="j"></td><td class="č">Č</td><td class="p">P</td><td></td>
-  </tr> 
-  <tr>
-    <td class="stlpec-meno">Coplák</td>
-    <td class="stlpec-cas">8-16 hod</td>
-    <td class="l">L</td><td class="p">P</td><td></td><td></td><td class="kam">Kam</td><td class="kam">Kam</td><td class="l">L</td><td class="p">P</td><td class="p">P</td><td></td><td></td><td class="kam">Kam</td><td class="kam">Kam</td><td class="kam">Kam</td><td class="l">L</td><td class="l">L</td><td></td><td></td><td class="kam">Kam</td><td class="kam">Kam</td><td class="l">L</td><td class="l">L</td><td class="p">P</td><td></td><td></td><td class="p">P</td><td class="p">P</td><td class="p">P</td><td class="l">L</td><td class="l">L</td><td></td>
-  </tr> 
-  <tr>
-    <td class="stlpec-meno" rowspan="2">Lazárová</td>
-    <td class="stlpec-cas">7-11 hod</td>
-    <td class="lau">Lau</td><td class="med">Med</td><td></td><td></td><td class="med">Med</td><td class="med">Med</td><td class="s">S</td><td class="lau">Lau</td><td class="med">Med</td><td></td><td></td><td class="med">Med</td><td class="s">S</td><td class="s">S</td><td class="lau">Lau</td><td class="lau">Lau</td><td></td><td></td><td class="s">S</td><td class="med">Med</td><td class="lau">Lau</td><td class="b">B</td><td class="p">P</td><td></td><td></td><td class="s">S</td><td class="s">S</td><td class="lau">Lau</td><td class="lau">Lau</td><td class="b">B</td><td></td>
-  </tr> 
-  <tr>
-    
-    <td class="stlpec-cas">16-18 hod</td>
-    <td class="lau">Lau</td><td class="b">B</td><td></td><td></td><td class="med">Med</td><td class="lau">Lau</td><td class="b">B</td><td class="lau">Lau</td><td class="med">Med</td><td></td><td></td><td class="med">Med</td><td class="med">Med</td><td class="med">Med</td><td class="lau">Lau</td><td class="lau">Lau</td><td></td><td></td><td class="med">Med</td><td class="med">Med</td><td class="med">Med</td><td class="b">B</td><td class="b">B</td><td></td><td></td><td class="med">Med</td><td class="med">Med</td><td class="lau">Lau</td><td class="lau">Lau</td><td class="med">Med</td><td></td>
-  </tr> 
-  <tr>
-    <td class="stlpec-meno">Korytárová</td>
-    <td class="stlpec-cas">9-11 hod</td>
-    <td class="moz">Moz</td><td class="j">J</td><td></td><td></td><td class="moz">Moz</td><td class="m">M</td><td class="m">M</td><td class="moz">Moz</td><td class="moz">Moz</td><td></td><td></td><td class="moz">Moz</td><td class="moz">Moz</td><td class="med">Med</td><td class="moz">Moz</td><td class="j">J</td><td></td><td></td><td class="med">Med</td><td class="j">J</td><td class="moz">Moz</td><td class="moz">Moz</td><td class="moz">Moz</td><td></td><td></td><td class="moz">Moz</td><td class="moz">Moz</td><td class="m">M</td><td class="moz">Moz</td><td class="moz">Moz</td><td></td>
-  </tr>  
-  <tr>
-    <td class="stlpec-meno">Jombíková</td>
-    <td class="stlpec-cas">2 hod</td>
-    <td class="moz">Moz</td><td class="moz">Moz</td><td></td><td></td><td class="moz">Moz</td><td class="moz">Moz</td><td class="moz">Moz</td><td class="moz">Moz</td><td class="moz">Moz</td><td></td><td></td><td class="moz">Moz</td><td class="moz">Moz</td><td class="moz">Moz</td><td class="moz">Moz</td><td class="moz">Moz</td><td></td><td></td><td class="moz">Moz</td><td class="moz">Moz</td><td class="moz">Moz</td><td class="moz">Moz</td><td class="moz">Moz</td><td></td><td></td><td class="moz">Moz</td><td class="moz">Moz</td><td class="moz">Moz</td><td class="moz">Moz</td><td class="moz">Moz</td><td></td>
-  </tr>
-  <tr>
-    <td class="stlpec-meno">Andrášiková</td>
-    <td class="stlpec-cas">3 hod</td>
-    <td></td><td class="č">Č</td><td></td><td></td><td></td><td class="č">Č</td><td></td><td class="j">J</td><td></td><td></td><td></td><td class="j">J</td><td></td><td class="č">Č</td><td class="j">J</td><td></td><td></td><td></td><td class="moz">Moz</td><td></td><td class="č">Č</td><td></td><td class="č">Č</td><td></td><td></td><td class="ď">Ď</td><td></td><td class="ris">Ris</td><td></td><td class="č">Č</td><td></td>
-  </tr>  
-  <tr>
-    <td class="stlpec-meno">Turčanová</td>
-    <td class="stlpec-cas">2 hod</td>
-    <td class="j">J</td><td class="s">S</td><td></td><td></td><td></td><td class="moz">Moz</td><td class="moz">Moz</td><td class="s">S</td><td class="č">Č</td><td></td><td></td><td></td><td class="moz">Moz</td><td class="moz">Moz</td><td class="moz">Moz</td><td class="č">Č</td><td></td><td></td><td class="č">Č</td><td class="moz">Moz</td><td class="č">Č</td><td></td><td class="s">S</td><td></td><td></td><td class="moz">Moz</td><td class="moz">Moz</td><td class="s">S</td><td class="s">S</td><td class="č">Č</td><td></td>
-  </tr>  
-  <tr>
-    <td class="stlpec-meno">Grečová</td>
-    <td class="stlpec-cas">Doobeda</td>
-    <td class="s">S</td><td class="s">S</td><td></td><td></td><td class="č">Č</td><td class="s">S</td><td class="med">Med</td><td class="s">S</td><td class="s">S</td><td></td><td></td><td class="s">S</td><td class="med">Med</td><td class="med">Med</td><td class="med">Med</td><td class="č">Č</td><td></td><td></td><td class="č">Č</td><td class="s">S</td><td class="s">S</td><td class="s">S</td><td class="s">S</td><td class="č">Č</td><td class="č">Č</td><td class="h">H</td><td class="med">Med</td><td class="s">S</td><td class="s">S</td><td class="med">Med</td><td></td>
-  </tr> 
-  <tr>
-    <td class="stlpec-meno">Vlčková</td>
-    <td class="stlpec-cas">rôzne</td>
-    <td></td><td></td><td></td><td></td><td></td><td></td><td class="moz">Moz</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="moz">Moz</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-  </tr> 
-  <tr>
-    <td class="stlpec-meno">Krivenková</td>
-    <td class="stlpec-cas">rôzne</td>
-    <td class="m">M</td><td></td><td></td><td></td><td></td><td class="m">M</td><td></td><td class="m">M</td><td></td><td></td><td></td><td></td><td class="m">M</td><td></td><td class="m">M</td><td></td><td></td><td></td><td></td><td class="m">M</td><td></td><td class="m">M</td><td></td><td></td><td></td><td></td><td class="m">M</td><td></td><td class="m">M</td><td></td><td></td>
-  </tr> 
-    </table>        
-</div>
-<div class="mriezka">
-
-<div class="sluzba lososova">
-    <span class="meno">Holeschová Ivana</span>
-
-    <div class="bodky">
-        <span class="bodka zelena"></span>
-        <span class="bodka oranzova"></span>
-        <span class="bodka cervena"></span>
+  <!-- HLAVIČKA -->
+  <header>
+    <div class="logo-container">
+      <img src="logo.png.jpg" alt="Logo Charita" class="logo-img">
+      <span>Charita sv. Alžbety</span>
     </div>
-    <a class="rozpis" href="Aplikacie/dochadzka.html?meno=Holeschová Ivana">Detailne informácie</a>
+    <h1 id="nadpis">ROZPIS SLUŽIEB</h1>
+    <div class="header-right" id="kto"></div>
+  </header>
+
+  <div class="table-container" tabindex="0" id="rozpis">
+    <div class="nacitavam">Načítavam rozpis…</div>
+  </div>
+
+  <div class="mriezka" id="mriezka"></div>
 </div>
 
-<div class="sluzba fialova">
-    <span class="meno">Legíňová Dušana</span>
-
-    <div class="bodky">
-        <span class="bodka zelena"></span>
-        <span class="bodka oranzova"></span>
-        <span class="bodka cervena"></span>
-    </div>
-    <a class="rozpis" href="Aplikacie/dochadzka.html?meno=Legíňová Dušana">Detailne informácie</a>
-</div>
-
-<div class="sluzba zlta">
-    <span class="meno">Spodniaková Jana</span>
-
-    <div class="bodky">
-        <span class="bodka zelena"></span>
-        <span class="bodka oranzova"></span>
-        <span class="bodka cervena"></span> 
-    </div>
-    <a class="rozpis" href="Aplikacie/dochadzka.html?meno=Spodniaková Jana">Detailne informácie</a>
-</div>
-    
-<div class="sluzba modra">
-    <span class="meno">Helexová Miriam</span>
-
-    <div class="bodky">
-        <span class="bodka zelena"></span>
-        <span class="bodka oranzova"></span>
-        <span class="bodka cervena"></span>
-    </div>
-    <a class="rozpis" href="Aplikacie/dochadzka.html?meno=Helexová Miriam">Detailne informácie</a>
-</div>
-
-<div class="sluzba nebovomodra">
-    <span class="meno">Laurošková Marcela</span>
-
-    <div class="bodky">
-        <span class="bodka zelena"></span>
-        <span class="bodka oranzova"></span>
-        <span class="bodka cervena"></span>
-    </div>
-    <a class="rozpis" href="Aplikacie/dochadzka.html?meno=Laurošková Marcela">Detailne informácie</a>
-</div>
-
-<div class="sluzba tmavozelena">
-    <span class="meno">Považanová Miriam</span>
-
-    <div class="bodky">
-        <span class="bodka zelena"></span>
-        <span class="bodka oranzova"></span>
-        <span class="bodka cervena"></span>
-    </div>
-    <a class="rozpis" href="Aplikacie/dochadzka.html?meno=Považanová Miriam">Detailne informácie</a>
-</div>
-
-<div class="sluzba slabozelena">
-    <span class="meno">Ďuricová Helena</span>
-
-    <div class="bodky">
-        <span class="bodka zelena"></span>
-        <span class="bodka oranzova"></span>
-        <span class="bodka cervena"></span>
-    </div>
-    <a class="rozpis" href="Aplikacie/dochadzka.html?meno=Ďuricová Helena">Detailne informácie</a>
-</div>
-
-<div class="sluzba ciklamenova">
-    <span class="meno">Kindernayová Kristína</span>
-
-    <div class="bodky">
-        <span class="bodka zelena"></span>
-        <span class="bodka oranzova"></span>
-        <span class="bodka cervena"></span>
-    </div>
-    <a class="rozpis" href="Aplikacie/dochadzka.html?meno=Kindernayová Kristína">Detailne informácie</a>
-</div>
-
-<div class="sluzba kriklavozelena">
-    <span class="meno">Mozolová Elena</span>
-
-    <div class="bodky">
-        <span class="bodka zelena"></span>
-        <span class="bodka oranzova"></span>
-        <span class="bodka cervena"></span>
-    </div>
-    <a class="rozpis" href="Aplikacie/dochadzka.html?meno=Mozolová Elena">Detailne informácie</a>
-</div>
-
-<div class="sluzba hneda">
-    <span class="meno">Čaradová Lucia</span>
-
-    <div class="bodky">
-        <span class="bodka zelena"></span>
-        <span class="bodka oranzova"></span>
-        <span class="bodka cervena"></span>
-    </div>
-    <a class="rozpis" href="Aplikacie/dochadzka.html?meno=Čaradová Lucia">Detailne informácie</a>
-</div>
-
-<div class="sluzba bezova">
-    <span class="meno">Kamasová Dana</span>
-
-    <div class="bodky">
-        <span class="bodka zelena"></span>
-        <span class="bodka oranzova"></span>
-        <span class="bodka cervena"></span>
-    </div>
-    <a class="rozpis" href="Aplikacie/dochadzka.html?meno=Kamasová Dana">Detailne informácie</a>
-</div>
-
-<div class="sluzba tmavocervena">
-    <span class="meno">Medveďová Petra</span>
-
-    <div class="bodky">
-        <span class="bodka zelena"></span>
-        <span class="bodka oranzova"></span>
-        <span class="bodka cervena"></span>
-    </div>
-    <a class="rozpis" href="Aplikacie/dochadzka.html?meno=Medveďová Petra">Detailne informácie</a>
-</div>
-
-<div class="sluzba bg-oranzova">
-    <span class="meno">Bublincová Miroslava</span>
-
-    <div class="bodky">
-        <span class="bodka zelena"></span>
-        <span class="bodka oranzova"></span>
-        <span class="bodka cervena"></span>
-    </div>
-    <a class="rozpis" href="Aplikacie/dochadzka.html?meno=Bublincová Miroslava">Detailne informácie</a>
-</div>
-
-<div class="sluzba bg-cervena">
-    <span class="meno">Judiaková Jana</span>
-
-    <div class="bodky">
-        <span class="bodka zelena"></span>
-        <span class="bodka oranzova"></span>
-        <span class="bodka cervena"></span>
-    </div>
-    <a class="rozpis" href="Aplikacie/dochadzka.html?meno=Judiaková Jana">Detailne informácie</a>
-</div>
-
-<div class="sluzba biela">
-    <span class="meno">Motyčáková Anna</span>
-
-    <div class="bodky">
-        <span class="bodka zelena"></span>
-        <span class="bodka oranzova"></span>
-        <span class="bodka cervena"></span>
-    </div>
-    <a class="rozpis" href="Aplikacie/dochadzka.html?meno=Motyčáková Anna">Detailne informácie</a>
-</div>
-
-<div class="sluzba bledozelena">
-    <span class="meno">Risková Martina</span>
-
-    <div class="bodky">
-        <span class="bodka zelena"></span>
-        <span class="bodka oranzova"></span>
-        <span class="bodka cervena"></span>
-    </div>
-    <a class="rozpis" href="Aplikacie/dochadzka.html?meno=Risková Martina">Detailne informácie</a>
-</div>
-
-</div>  
-</div>
-</div>
-</div>
 <script>
-function todayKey(){ return new Date().toISOString().slice(0,10); }
+  // Adresa pomocníka (Google Apps Script)
+  const API = "https://script.google.com/macros/s/AKfycbzeTbJuIlv-giijsjahwL5R3rIlcwvecLA3GIjYrsgxLJGyaDci936SQ__Fk5nbJ5Dv/exec";
+  const PIN_KLUC = "charita_pin";
+  const MESIACE = ["JANUÁR","FEBRUÁR","MAREC","APRÍL","MÁJ","JÚN","JÚL","AUGUST","SEPTEMBER","OKTÓBER","NOVEMBER","DECEMBER"];
 
-function osviezDochadzku(){
-  document.querySelectorAll('.sluzba').forEach(card => {
-    const nameEl = card.querySelector('.meno');
-    if(!nameEl) return;
-    const meno = nameEl.textContent.trim();
-    const kluc = 'dochadzka_' + meno.replace(/\s+/g, '_');
+  let PIN = "";
+  try { PIN = localStorage.getItem(PIN_KLUC) || ""; } catch(e) {}
 
-    let entries = [];
-    try {
-      const vsetko = JSON.parse(localStorage.getItem(kluc)) || {};
-      entries = vsetko[todayKey()] || [];
-    } catch(e) {}
+  function todayKey(){ return new Date().toISOString().slice(0,10); }
 
-    let aktivnyIndex = 2; // predvolene červená (mimo služby)
-    if(entries.length){
-      const posledny = entries[entries.length - 1];
-      if(posledny.type === 'prichod') aktivnyIndex = 0;
-      else if(posledny.type === 'prestup') aktivnyIndex = 1;
-      else aktivnyIndex = 2;
-    }
-
-    const bodky = card.querySelectorAll('.bodka');
-    bodky.forEach((bodka, i) => {
-      if(i === aktivnyIndex){
-        bodka.classList.add('aktivna');
-        bodka.classList.remove('tlmena');
-      } else {
-        bodka.classList.add('tlmena');
-        bodka.classList.remove('aktivna');
-      }
-    });
-  });
-}
-
-osviezDochadzku();
-setInterval(osviezDochadzku, 30000);
-</script>
-<script>
-  // Zoradí karty opatrovateliek podľa abecedy (priezviska)
-  {
-    const mriezka = document.querySelector(".mriezka");
-    if(mriezka){
-      [...mriezka.querySelectorAll(":scope > .sluzba")]
-        .sort((a,b)=> a.querySelector(".meno").textContent.trim()
-          .localeCompare(b.querySelector(".meno").textContent.trim(), "sk"))
-        .forEach(k => mriezka.appendChild(k));
-    }
+  async function api(akcia, data){
+    const telo = Object.assign({ akcia: akcia, pin: PIN }, data || {});
+    const res = await fetch(API, { method: "POST", body: JSON.stringify(telo) });
+    return res.json();
   }
+
+  function ukazPrihlasenie(sprava){
+    document.getElementById("obsah").hidden = true;
+    document.getElementById("prihlasenie").hidden = false;
+    document.getElementById("pinChyba").textContent = sprava || "";
+    document.getElementById("pinInput").value = "";
+    document.getElementById("pinInput").focus();
+  }
+
+  function odhlas(sprava){
+    PIN = "";
+    try { localStorage.removeItem(PIN_KLUC); } catch(e) {}
+    ukazPrihlasenie(sprava);
+  }
+
+  async function prihlas(){
+    const input = document.getElementById("pinInput");
+    const btn = document.getElementById("pinBtn");
+    const pin = input.value.trim();
+    if(!pin){ document.getElementById("pinChyba").textContent = "Zadaj PIN."; return; }
+    btn.disabled = true;
+    document.getElementById("pinChyba").textContent = "Overujem…";
+    PIN = pin;
+    try {
+      const r = await api("login");
+      if(!r.ok){
+        PIN = "";
+        document.getElementById("pinChyba").textContent = r.chyba || "Nesprávny PIN";
+        input.value = "";
+        input.focus();
+      } else {
+        try { localStorage.setItem(PIN_KLUC, pin); } catch(e) {}
+        spusti(r);
+      }
+    } catch(e){
+      PIN = "";
+      document.getElementById("pinChyba").textContent = "Nepodarilo sa spojiť. Skontroluj internet a skús znova.";
+    }
+    btn.disabled = false;
+  }
+
+  document.getElementById("pinBtn").addEventListener("click", prihlas);
+  document.getElementById("pinInput").addEventListener("keydown", e => { if(e.key === "Enter") prihlas(); });
+  document.getElementById("odhlasitBtn").addEventListener("click", () => odhlas(""));
+
+  /* ===== ROZPIS ===== */
+  async function nacitajRozpis(mesiac){
+    const box = document.getElementById("rozpis");
+    box.innerHTML = '<div class="nacitavam">Načítavam rozpis…</div>';
+    const r = await api("rozpis", { mesiac: mesiac || "" });
+    if(!r.ok){ if(r.zlyPin) return odhlas("PIN už neplatí, zadaj ho znova."); box.innerHTML = '<div class="nacitavam">' + (r.chyba || "Chyba") + '</div>'; return; }
+
+    // výber mesiacov
+    const sel = document.getElementById("mesiacSelect");
+    sel.innerHTML = (r.mesiace || []).map(ym => {
+      const [y,m] = ym.split("-");
+      const nazov = MESIACE[parseInt(m,10)-1];
+      return `<option value="${ym}">${nazov.charAt(0) + nazov.slice(1).toLowerCase()} ${y}</option>`;
+    }).join("");
+    if(r.mesiac) sel.value = r.mesiac;
+
+    if(!r.mesiac){
+      document.getElementById("nadpis").textContent = "ROZPIS SLUŽIEB";
+      box.innerHTML = '<div class="nacitavam">Rozpis zatiaľ nie je nahraný.</div>';
+      return;
+    }
+    const [y,m] = r.mesiac.split("-");
+    document.getElementById("nadpis").textContent = "ROZPIS SLUŽIEB: " + MESIACE[parseInt(m,10)-1] + " " + y;
+
+    // zo súboru zoberieme len tabuľku (funguje aj s celou starou stránkou)
+    const doc = new DOMParser().parseFromString(r.html, "text/html");
+    const tabulka = doc.querySelector("table");
+    box.innerHTML = tabulka ? tabulka.outerHTML : r.html;
+  }
+
+  document.getElementById("mesiacSelect").addEventListener("change", e => nacitajRozpis(e.target.value));
+
+  /* ===== KARTY OPATROVATELIEK ===== */
+  function stavZTelefonu(meno){
+    // kým dochádzka neposiela záznamy pomocníkovi, berieme stav aj z tohto zariadenia
+    try {
+      const vsetko = JSON.parse(localStorage.getItem("dochadzka_" + meno.replace(/\s+/g, "_"))) || {};
+      const dnes = vsetko[todayKey()] || [];
+      return dnes.length ? dnes[dnes.length - 1].type : null;
+    } catch(e){ return null; }
+  }
+
+  function escapeHtml(t){
+    return String(t).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+  }
+
+  async function nacitajKarty(){
+    const r = await api("karty", { dnes: todayKey() });
+    if(!r.ok){ if(r.zlyPin) return odhlas("PIN už neplatí, zadaj ho znova."); return; }
+    const karty = (r.karty || []).slice()
+      .sort((a,b) => a.meno.localeCompare(b.meno, "sk"));
+    document.getElementById("mriezka").innerHTML = karty.map(k => {
+      const stav = k.stav || stavZTelefonu(k.meno);
+      const aktivny = stav === "prichod" ? 0 : (stav === "prestup" ? 1 : 2);
+      const bodka = (farba, i) =>
+        `<span class="bodka ${farba} ${i === aktivny ? "aktivna" : "tlmena"}"></span>`;
+      return `<div class="sluzba ${escapeHtml(k.farba)}">
+        <span class="meno">${escapeHtml(k.meno)}</span>
+        <div class="bodky">${bodka("zelena",0)}${bodka("oranzova",1)}${bodka("cervena",2)}</div>
+        <a class="rozpis" href="Aplikacie/dochadzka.html?meno=${encodeURIComponent(k.meno)}">Detailne informácie</a>
+      </div>`;
+    }).join("");
+  }
+
+  /* ===== ŠTART ===== */
+  let interval = null;
+  function spusti(login){
+    document.getElementById("prihlasenie").hidden = true;
+    document.getElementById("obsah").hidden = false;
+    document.getElementById("kto").textContent = login.meno;
+    nacitajRozpis("");
+    nacitajKarty();
+    clearInterval(interval);
+    interval = setInterval(nacitajKarty, 60000);
+  }
+
+  (async function(){
+    if(!PIN){ ukazPrihlasenie(""); return; }
+    try {
+      const r = await api("login");
+      if(r.ok) spusti(r);
+      else odhlas(r.zlyPin ? "" : (r.chyba || ""));
+    } catch(e){
+      ukazPrihlasenie("Nepodarilo sa spojiť. Skontroluj internet a skús znova.");
+    }
+  })();
 </script>
 </body>
 </html>
-
-
-
