@@ -379,6 +379,9 @@ td:not(.stlpec-meno):not(.stlpec-cas){
 
 }
 
+.l, .č, .p, .j, .med, .moz, .kin, .h {
+  color: #ffffff;
+}
 
 
 
