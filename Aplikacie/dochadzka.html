@@ -185,6 +185,7 @@
 
 </div>
 
+<script src="spojenie.js"></script>
 <script>
   const DEFAULT_NAME = "Bublincová Miroslava";
   const params = new URLSearchParams(window.location.search);
@@ -204,7 +205,7 @@
   const STORAGE_KEY = "dochadzka_" + NAME.replace(/\s+/g, "_");
   const SYNC_URL = "";
 
-  function todayKey(d = new Date()) { return d.toISOString().slice(0,10); }
+  function todayKey(d = new Date()) { return localKey(d); }
   function pad(n){ return n.toString().padStart(2,"0"); }
   function fmtTime(d){ return pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds()); }
   function fmtDateLabel(d){ return d.toLocaleDateString("sk-SK", { weekday: "long", day: "numeric", month: "long" }); }
@@ -218,11 +219,16 @@
     const key = todayKey();
     if(!all[key]) all[key] = [];
     const now = new Date();
-    const entry = { type, time: now.toISOString() };
+    const entry = { id: noveId(), type, time: now.toISOString() };
+    if(!klient && type !== "prichod"){
+      // odchod / prestup: meno klienta z posledného príchodu
+      const p = all[key].filter(e => e.type === "prichod").pop();
+      if(p && p.klient) klient = p.klient;
+    }
     if(klient) entry.klient = klient;
     all[key].push(entry);
     saveAll(all);
-    maybeSync(entry);
+    Spoj.odosli(NAME, Object.assign({ datum: key }, entry));
     render();
     refreshKlientList();
   }
@@ -258,7 +264,7 @@
     }
     if(start !== null){
       const last = new Date(entries[entries.length-1].time);
-      const isToday = !dateKey || dateKey === new Date().toISOString().slice(0,10);
+      const isToday = !dateKey || dateKey === localKey();
       total += (isToday ? new Date() : last) - start;
     }
     return total;
@@ -352,7 +358,7 @@
   function rowHtml(e){
     const t = e.time ? hhmm(e.time) : "";
     const sel = v => e.type === v ? "selected" : "";
-    return `<div class="edit-row">
+    return `<div class="edit-row" data-id="${e.id || ""}">
       <select class="er-type">
         <option value="prichod" ${sel("prichod")}>Príchod</option>
         <option value="prestup" ${sel("prestup")}>Presun</option>
@@ -372,10 +378,8 @@
   }
 
     function pinOk(){
-    const pin = prompt("Zadaj PIN pre opravy:");
-    if(pin === null) return false;
-    if(Number(pin.trim()) * 7 + 1234 === 633894) return true;
-    alert("Nesprávny PIN.");
+    if(Spoj.jeVeduca()) return true;
+    alert("Opravy môže robiť len vedúca.");
     return false;
   }
 
@@ -413,18 +417,20 @@
       const klient = r.querySelector(".er-klient").value.trim();
       if(!time){ alert("Každý záznam musí mať čas."); return; }
       if(type === "prichod" && !klient){ alert("Pri príchode zadaj klienta."); return; }
-      const e = { type, time: new Date(day + "T" + time).toISOString() };
+      const e = { id: r.dataset.id || noveId(), type, time: new Date(day + "T" + time).toISOString() };
       if(klient) e.klient = klient;
       list.push(e);
     }
     list.sort((a,b)=> a.time.localeCompare(b.time));
-    const all = loadAll();
-    if(list.length) all[day] = list; else delete all[day];
-    saveAll(all);
-    render();
-    refreshKlientList();
-    editPanel.hidden = true;
-    alert("Uložené.");
+    Spoj.nahradDen(NAME, day, list).then(()=>{
+      const all = loadAll();
+      if(list.length) all[day] = list; else delete all[day];
+      saveAll(all);
+      render();
+      refreshKlientList();
+      editPanel.hidden = true;
+      alert("Uložené do tabuľky.");
+    }).catch(err => alert("Nepodarilo sa uložiť: " + err.message));
   });
 
   document.getElementById("btnEditCancel").addEventListener("click", ()=>{ editPanel.hidden = true; });
@@ -439,6 +445,19 @@
   tickClock();
   refreshKlientList();
   render();
+  Spoj.stav("Načítavam z tabuľky…");
+  (async function(){
+    try {
+      await Spoj.login();
+      if(!Spoj.jeVeduca()) document.getElementById("btnEditToggle").style.display = "none";
+      await Spoj.stiahniZaznamy(NAME, STORAGE_KEY);
+      refreshKlientList();
+      render();
+      await Spoj.odosliFrontu();
+    } catch(e){
+      Spoj.stav("Nepodarilo sa spojiť – zobrazujem uložené v telefóne.", true);
+    }
+  })();
 </script>
 </body>
 </html>

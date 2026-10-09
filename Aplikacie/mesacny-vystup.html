@@ -56,7 +56,7 @@
 
   .summary {
     display:grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap:10px;
     margin-bottom:18px;
   }
@@ -115,6 +115,7 @@
     .app { max-width: 100%; padding: 0; }
     table.report { font-size: 11px; }
   }
+  @media (max-width: 520px){ .summary { grid-template-columns: repeat(2, 1fr); } }
 </style>
 </head>
 <body>
@@ -138,6 +139,7 @@
     <div class="box"><div class="v" id="sumHours">0</div><div class="k">odpracovaných hodín</div></div>
     <div class="box"><div class="v" id="sumDov">0</div><div class="k">dní dovolenky</div></div>
     <div class="box"><div class="v" id="sumPn">0</div><div class="k">dní PN</div></div>
+    <div class="box"><div class="v" id="sumPrie">0:00</div><div class="k">z toho priepustky</div></div>
   </div>
 
   <table class="report">
@@ -152,18 +154,23 @@
     <tbody id="reportBody"></tbody>
     <tfoot>
       <tr>
-        <td colspan="3">Spolu</td>
+        <td colspan="3">Spolu odpracované (vrátane priepustiek)</td>
         <td class="worked" id="footHours">0:00</td>
+      </tr>
+      <tr>
+        <td colspan="3">z toho priepustky</td>
+        <td class="worked" id="footPrie">0:00</td>
       </tr>
     </tfoot>
   </table>
 
-  <div class="note">
+  <div class="note" id="syncNote">
     Zdroj dát: appka Dochádzka a ručne zadané záznamy v Evidencii (v tomto telefóne/prehliadači).
   </div>
 
 </div>
 
+<script src="spojenie.js"></script>
 <script>
   const DEFAULT_NAME = "Bublincová Miroslava";
   const params = new URLSearchParams(window.location.search);
@@ -202,7 +209,7 @@
     }
     if(start !== null){
       const last = new Date(entries[entries.length-1].time);
-      const isToday = !dateKey || dateKey === new Date().toISOString().slice(0,10);
+      const isToday = !dateKey || dateKey === localKey();
       total += (isToday ? new Date() : last) - start;
     }
     return total;
@@ -244,7 +251,7 @@
     const abs = loadAbsencie();
     const n = daysInMonth(y,m);
 
-    let totalMs = 0, dov = 0, pn = 0;
+    let totalMs = 0, dov = 0, pn = 0, prieMs = 0;
     let rows = "";
     const labels = { dov: "DOVOLENKA", pn: "PN", prie: "PRIEPUSTKA" };
 
@@ -255,6 +262,7 @@
       const entries = all[dateStr] || [];
       const worked = computeWorkedMs(entries, dateStr);
       totalMs += worked;
+      let dayPrie = 0;
 
       const klienti = [];
       const times = entries.map(e=>{
@@ -280,31 +288,56 @@
         return `${cislo}: ${k}`;
       }).join(", ");       
       }
-      if(a){
+      if(a && a.typ !== "prie"){
         noteHtml += `<span class="tag ${a.typ}">${labels[a.typ]}</span>`;
         if(a.typ === "dov") dov++;
         if(a.typ === "pn") pn++;
       }
+      abs.filter(x => x.typ === "prie" && dateStr >= x.od && dateStr <= (x.do || x.od)).forEach(x => {
+        const c = priepustkaCas(x);
+        const t = priepustkaText(x);
+        if(noteHtml) noteHtml += " ";
+        noteHtml += `<span class="tag prie">PRIEPUSTKA</span>`;
+        if(c){
+          noteHtml += ` ${c.od}–${c.do} (${fmtDuration(c.ms)})`;
+          prieMs += c.ms;
+          dayPrie += c.ms;
+        }
+        if(t) noteHtml += ` ${t}`;
+      });
 
       rows += `<tr class="${isWeekend ? 'weekend':''}">
         <td>${pad(d)}.${pad(m)}. <span style="color:var(--muted)">${DAY_NAMES[jsDate.getDay()]}</span></td>
         <td class="times">${times || "—"}</td>
         <td>${noteHtml}</td>
-        <td class="worked">${worked > 0 ? fmtDuration(worked) : "—"}</td>
+        <td class="worked">${(worked + dayPrie) > 0 ? fmtDuration(worked + dayPrie) : "—"}</td>
       </tr>`;
     }
 
     document.getElementById("reportBody").innerHTML = rows;
-    document.getElementById("footHours").textContent = fmtDuration(totalMs);
-    document.getElementById("sumHours").textContent = Math.round(totalMs/3600000*10)/10;
+    document.getElementById("footHours").textContent = fmtDuration(totalMs + prieMs);
+    document.getElementById("footPrie").textContent = fmtDuration(prieMs);
+    document.getElementById("sumHours").textContent = Math.round((totalMs + prieMs)/3600000*10)/10;
     document.getElementById("sumDov").textContent = dov;
     document.getElementById("sumPn").textContent = pn;
+    document.getElementById("sumPrie").textContent = fmtDuration(prieMs);
   }
 
   document.getElementById("printBtn").addEventListener("click", ()=> window.print());
 
-  buildMonthOptions();
-  render();
+  Spoj.stav("Načítavam z tabuľky…");
+  (async function(){
+    try {
+      await Spoj.login();
+      await Spoj.stiahniZaznamy(NAME, DOCH_KEY);
+      await Spoj.stiahniAbsencie(NAME, ABS_KEY);
+      Spoj.stav("Údaje z tabuľky ✓");
+    } catch(e){
+      Spoj.stav("Nepodarilo sa spojiť – zobrazujem uložené v tomto zariadení.", true);
+    }
+    buildMonthOptions();
+    render();
+  })();
 </script>
 </body>
 </html>

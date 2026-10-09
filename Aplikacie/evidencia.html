@@ -45,7 +45,7 @@
 
   .summary {
     display:grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap:10px;
     margin-bottom:22px;
   }
@@ -204,6 +204,7 @@
     margin-top:22px;
     line-height:1.5;
   }
+  @media (max-width: 520px){ .summary { grid-template-columns: repeat(2, 1fr); } }
 </style>
 </head>
 <body>
@@ -220,6 +221,7 @@
     <div class="box"><div class="v" id="sumHours">0</div><div class="k">hod. tento mesiac</div></div>
     <div class="box"><div class="v" id="sumDov">0</div><div class="k">dní dovolenky</div></div>
     <div class="box"><div class="v" id="sumPn">0</div><div class="k">dní PN</div></div>
+    <div class="box"><div class="v" id="sumPrie">0:00</div><div class="k">z toho priepustky</div></div>
   </div>
 
   <h2 class="section">Pridať dovolenku / PN / priepustku</h2>
@@ -237,9 +239,19 @@
         <label>Od</label>
         <input type="date" id="odInput">
       </div>
-      <div class="form-row">
+      <div class="form-row" id="doRow">
         <label>Do</label>
         <input type="date" id="doInput">
+      </div>
+    </div>
+    <div class="form-dates" id="prieCasRow" style="display:none">
+      <div class="form-row">
+        <label>Odchod (čas od)</label>
+        <input type="time" id="prieOdInput">
+      </div>
+      <div class="form-row">
+        <label>Návrat (čas do)</label>
+        <input type="time" id="prieDoInput">
       </div>
     </div>
     <div class="form-row">
@@ -286,7 +298,7 @@
     <div class="empty">Zatiaľ žiadne záznamy z appky</div>
   </div>
 
-  <div class="note">
+  <div class="note" id="syncNote">
     Príchody a odchody sa sem načítavajú z appky Dochádzka (z tohto telefónu/prehliadača).
     Dovolenka, PN a priepustky sa pridávajú ručne vyššie. Pre zdieľanie medzi zariadeniami
     treba nastaviť online synchronizáciu (napr. cez Google Sheets).
@@ -294,6 +306,7 @@
 
 </div>
 
+<script src="spojenie.js"></script>
 <script>
   const DEFAULT_NAME = "Bublincová Miroslava";
   const params = new URLSearchParams(window.location.search);
@@ -340,15 +353,23 @@
     localStorage.setItem(ABS_KEY, JSON.stringify(list));
   }
 
-  function computeWorkedMs(entries, dateKey){
-    if(!entries.length) return 0;
-    const first = new Date(entries[0].time);
-    const last = entries[entries.length-1];
-    const isToday = dateKey === todayKey();
-    const end = (last.type === "odchod") ? new Date(last.time) : (isToday ? new Date() : new Date(last.time));
-    return end - first;
+    function computeWorkedMs(entries, dateKey){
+    // Ráta sa od príchodu po odchod. Presun medzi klientmi sa ráta,
+    // čas po odchode (až do ďalšieho príchodu) sa neráta.
+    let total = 0, start = null;
+    for(const e of entries){
+      const t = new Date(e.time);
+      if(e.type === "prichod" && start === null) start = t;
+      if(e.type === "odchod" && start !== null){ total += t - start; start = null; }
+    }
+    if(start !== null){
+      const last = new Date(entries[entries.length-1].time);
+      const isToday = !dateKey || dateKey === localKey();
+      total += (isToday ? new Date() : last) - start;
+    }
+    return total;
   }
-  function todayKey(){ return new Date().toISOString().slice(0,10); }
+  function todayKey(){ return localKey(); }
   function fmtDuration(ms){
     const totalMin = Math.round(ms/60000);
     const h = Math.floor(totalMin/60);
@@ -376,9 +397,10 @@
       const entries = all[key];
       const chips = entries.map((e, idx)=>{
         const label = e.type === "prichod" ? "P" : (e.type === "prestup" ? "Pr" : "O");
-        const klient = (e.type === "prichod" && e.klient) ? " " + e.klient : "";
+        const klient = e.klient ? " " + e.klient : "";
+        const x = Spoj.jeVeduca() ? `<span class="x" data-key="${key}" data-idx="${idx}">✕</span>` : "";
         return `<span class="item">${label} ${fmtTime(e.time)}${klient}
-          <span class="x" data-key="${key}" data-idx="${idx}">✕</span></span>`;
+          ${x}</span>`;
       }).join("");
       const worked = fmtDuration(computeWorkedMs(entries, key));
       return `<div class="day-row" style="flex-direction:column; align-items:stretch;">
@@ -394,14 +416,25 @@
       el.addEventListener("click", ()=>{
         const key = el.getAttribute("data-key");
         const idx = parseInt(el.getAttribute("data-idx"));
+        if(!confirm("Naozaj zmazať tento záznam?")) return;
         const all = loadDochadzka();
-        all[key].splice(idx, 1);
-        if(all[key].length === 0) delete all[key];
-        saveDochadzka(all);
-        renderDays();
-        renderSummary();
+        const zoznam = all[key].slice();
+        zoznam.splice(idx, 1);
+        Spoj.nahradDen(NAME, key, zoznam).then(()=>{
+          if(zoznam.length) all[key] = zoznam; else delete all[key];
+          saveDochadzka(all);
+          renderDays();
+          renderSummary();
+        }).catch(err => alert("Nepodarilo sa zmazať: " + err.message));
       });
     });
+  }
+
+  function rangeText(a, range){
+    const c = priepustkaCas(a);
+    if(!c) return range + (a.poznamka ? " · " + a.poznamka : "");
+    const t = priepustkaText(a);
+    return range + " · " + c.od + "–" + c.do + " (" + fmtDuration(c.ms) + " hod)" + (t ? " · " + t : "");
   }
 
   function renderAbsencie(){
@@ -416,7 +449,7 @@
         const range = a.od === a.do ? fmtDateSk(a.od) : (fmtDateSk(a.od) + " – " + fmtDateSk(a.do));
         return `<div class="abs-row">
           <span class="tag ${a.typ}">${labels[a.typ]}</span>
-          <span class="range">${range}${a.poznamka ? " · "+a.poznamka : ""}</span>
+          <span class="range">${rangeText(a, range)}</span>
           <span class="del" data-idx="${idx}">✕</span>
         </div>`;
       }).join("");
@@ -424,10 +457,14 @@
         el.addEventListener("click", ()=>{
           const i = parseInt(el.getAttribute("data-idx"));
           const l = loadAbsencie();
-          l.splice(i,1);
-          saveAbsencie(l);
-          renderAbsencie();
-          renderSummary();
+          if(!confirm("Naozaj zmazať tento záznam?")) return;
+          api("zmazAbsenciu", { meno: NAME, id: l[i].id }).then(r=>{
+            if(!r.ok) throw new Error(r.chyba || "Chyba");
+            l.splice(i,1);
+            saveAbsencie(l);
+            renderAbsencie();
+            renderSummary();
+          }).catch(err => alert("Nepodarilo sa zmazať: " + err.message));
         });
       });
     }
@@ -441,18 +478,28 @@
     Object.keys(all).forEach(key=>{
       if(key.startsWith(ym)) totalMs += computeWorkedMs(all[key], key);
     });
-    document.getElementById("sumHours").textContent = Math.round(totalMs/3600000 * 10)/10;
 
     const abs = loadAbsencie();
-    let dov = 0, pn = 0;
+    let dov = 0, pn = 0, prieMs = 0;
     abs.forEach(a=>{
       const days = daysBetween(a.od, a.do || a.od);
       if(a.typ === "dov") dov += days;
       if(a.typ === "pn") pn += days;
+      const c = priepustkaCas(a);
+      if(c && a.od.startsWith(ym)) prieMs += c.ms;
     });
     document.getElementById("sumDov").textContent = dov;
     document.getElementById("sumPn").textContent = pn;
+    document.getElementById("sumPrie").textContent = fmtDuration(prieMs);
+    document.getElementById("sumHours").textContent = Math.round((totalMs + prieMs)/3600000 * 10)/10;
   }
+
+  document.getElementById("typSelect").addEventListener("change", (e)=>{
+    const prie = e.target.value === "prie";
+    document.getElementById("prieCasRow").style.display = prie ? "" : "none";
+    document.getElementById("doRow").style.display = prie ? "none" : "";
+    document.querySelector('label[for="odInput"], #odInput').previousElementSibling.textContent = prie ? "Dátum" : "Od";
+  });
 
   document.getElementById("dochTypSelect").addEventListener("change", (e)=>{
     document.getElementById("dochKlientRow").style.display =
@@ -469,11 +516,16 @@
     const iso = new Date(date + "T" + time + ":00").toISOString();
     const all = loadDochadzka();
     if(!all[date]) all[date] = [];
-    const entry = { type: typ, time: iso };
+    const entry = { id: noveId(), type: typ, time: iso };
     if(typ === "prichod" && klient) entry.klient = klient;
+    if(typ !== "prichod"){
+      const p = all[date].filter(e => e.type === "prichod" && e.time <= iso).pop();
+      if(p && p.klient) entry.klient = p.klient;
+    }
     all[date].push(entry);
     all[date].sort((a,b)=> new Date(a.time) - new Date(b.time));
     saveDochadzka(all);
+    Spoj.odosli(NAME, Object.assign({ datum: date }, entry));
 
     document.getElementById("dochTimeInput").value = "";
     document.getElementById("dochKlientInput").value = "";
@@ -485,22 +537,50 @@
     const typ = document.getElementById("typSelect").value;
     const od = document.getElementById("odInput").value;
     let doD = document.getElementById("doInput").value;
-    const poznamka = document.getElementById("poznamkaInput").value.trim();
+    let poznamka = document.getElementById("poznamkaInput").value.trim();
+    if(typ === "prie"){
+      const tOd = document.getElementById("prieOdInput").value;
+      const tDo = document.getElementById("prieDoInput").value;
+      if(!tOd || !tDo){ alert("Pri priepustke vyplň čas odchodu aj návratu."); return; }
+      if(tDo <= tOd){ alert("Čas návratu musí byť neskôr ako čas odchodu."); return; }
+      doD = od;
+      poznamka = tOd + "-" + tDo + (poznamka ? " | " + poznamka : "");
+    }
     if(!od){ alert("Vyplň dátum Od."); return; }
     if(!doD){ doD = od; }
-    const list = loadAbsencie();
-    list.push({ typ, od, do: doD, poznamka });
-    saveAbsencie(list);
-    document.getElementById("odInput").value = "";
-    document.getElementById("doInput").value = "";
-    document.getElementById("poznamkaInput").value = "";
-    renderAbsencie();
-    renderSummary();
+    const a = { id: noveId(), typ, od, do: doD, poznamka };
+    api("pridajAbsenciu", { meno: NAME, absencia: a }).then(r=>{
+      if(!r.ok) throw new Error(r.chyba || "Chyba");
+      const list = loadAbsencie();
+      list.push(a);
+      saveAbsencie(list);
+      document.getElementById("odInput").value = "";
+      document.getElementById("doInput").value = "";
+      document.getElementById("poznamkaInput").value = "";
+      document.getElementById("prieOdInput").value = "";
+      document.getElementById("prieDoInput").value = "";
+      renderAbsencie();
+      renderSummary();
+    }).catch(err => alert("Nepodarilo sa uložiť: " + err.message));
   });
 
   renderDays();
   renderAbsencie();
   renderSummary();
+  Spoj.stav("Načítavam z tabuľky…");
+  (async function(){
+    try {
+      await Spoj.login();
+      await Spoj.stiahniZaznamy(NAME, DOCH_KEY);
+      await Spoj.stiahniAbsencie(NAME, ABS_KEY);
+      renderDays();
+      renderAbsencie();
+      renderSummary();
+      await Spoj.odosliFrontu();
+    } catch(e){
+      Spoj.stav("Nepodarilo sa spojiť – zobrazujem uložené v tomto zariadení.", true);
+    }
+  })();
 </script>
 </body>
 </html>
