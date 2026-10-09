@@ -265,15 +265,16 @@
       let dayPrie = 0;
 
       const klienti = [];
-      const times = entries.map(e=>{
+      // položky v časovom slede: príchody/odchody aj priepustky
+      const polozky = entries.map(e=>{
         const label = e.type === "prichod" ? "P" : (e.type === "prestup" ? "Pr" : "O");
         let klientTxt = "";
         if(e.type === "prichod" && e.klient){
           klientTxt = " " + e.klient;
           if(!klienti.includes(e.klient)) klienti.push(e.klient);
         }
-        return label+" "+fmtTime(e.time)+klientTxt;
-      }).join(" · ");
+        return { kluc: fmtTime(e.time), html: label+" "+fmtTime(e.time)+klientTxt };
+      });
 
       const a = absenceForDate(dateStr, abs);
       let noteHtml = "";
@@ -296,15 +297,15 @@
       abs.filter(x => x.typ === "prie" && dateStr >= x.od && dateStr <= (x.do || x.od)).forEach(x => {
         const c = priepustkaCas(x);
         const t = priepustkaText(x);
-        if(noteHtml) noteHtml += " ";
-        noteHtml += `<span class="tag prie">PRIEPUSTKA</span>`;
-        if(c){
-          noteHtml += ` ${c.od}–${c.do} (${fmtDuration(c.ms)})`;
-          prieMs += c.ms;
-          dayPrie += c.ms;
-        }
-        if(t) noteHtml += ` ${t}`;
+        polozky.push({
+          kluc: c ? c.od : "00:00",
+          html: `<span class="tag prie">PRIEPUSTKA</span> ${c ? c.od + "–" + c.do : ""}`
+        });
+        if(c){ prieMs += c.ms; dayPrie += c.ms; }
+        if(t){ if(noteHtml) noteHtml += ", "; noteHtml += "priepustka: " + t; }
       });
+      polozky.sort((p, q) => p.kluc < q.kluc ? -1 : (p.kluc > q.kluc ? 1 : 0));
+      const times = polozky.map(p => p.html).join(" · ");
 
       rows += `<tr class="${isWeekend ? 'weekend':''}">
         <td>${pad(d)}.${pad(m)}. <span style="color:var(--muted)">${DAY_NAMES[jsDate.getDay()]}</span></td>
