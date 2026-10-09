@@ -162,7 +162,7 @@
   let PIN = "";
   try { PIN = localStorage.getItem(PIN_KLUC) || ""; } catch(e) {}
 
-  function todayKey(){ return new Date().toISOString().slice(0,10); }
+  function todayKey(){ const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
 
   async function api(akcia, data){
     const telo = Object.assign({ akcia: akcia, pin: PIN }, data || {});
