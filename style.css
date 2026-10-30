@@ -137,6 +137,11 @@ td:not(.stlpec-meno):not(.stlpec-cas){
   padding: 4px;
   border-radius: 4px;
 }
+.jar{
+  background-color: #ffc7ce;
+  padding: 4px;
+  border-radius: 4px;
+}
 .m{
   background-color: #ffffff;
   padding: 4px;
@@ -215,6 +220,11 @@ td:not(.stlpec-meno):not(.stlpec-cas){
 
 .lososova::before {
     background: #ff000080;
+}
+
+/* Jarábeková - RUŽOVÁ */
+.ruzova::before {
+    background: #f9a8b8;
 }
 
 /* Legíňová – FIALOVÁ */
